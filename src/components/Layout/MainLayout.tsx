@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
-import { Menu, ChevronLeft, ChevronRight, DesktopIcon, SmartphoneIcon } from 'lucide-react';
+import { Menu, ChevronLeft, ChevronRight, Monitor, Smartphone } from 'lucide-react';
 import { 
   Sheet,
   SheetContent,
@@ -16,15 +15,12 @@ const MainLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [forceMobileView, setForceMobileView] = useState(false);
 
-  // Reset forced mode when actual device changes
   useEffect(() => {
     setForceMobileView(false);
   }, [isMobileDevice]);
 
-  // Calculate view mode (real or forced)
   const isMobileView = forceMobileView || isMobileDevice;
 
-  // Desktop sidebar with collapse functionality
   const DesktopSidebar = () => (
     <div className={`${collapsed ? 'w-16' : 'w-64'} border-r flex-shrink-0 h-screen sticky top-0 transition-all duration-300 ease-in-out`}>
       <div className="flex flex-col h-full">
@@ -46,7 +42,6 @@ const MainLayout = () => {
 
   return (
     <div className="flex min-h-screen flex-col">
-      {/* View Toggle */}
       <div className="fixed top-4 right-4 z-40 bg-white border rounded-md shadow-sm flex">
         <Button 
           variant="ghost" 
@@ -54,7 +49,7 @@ const MainLayout = () => {
           onClick={() => setForceMobileView(false)}
           className={!isMobileView ? "bg-muted" : ""}
         >
-          <DesktopIcon size={18} />
+          <Monitor size={18} />
         </Button>
         <Button 
           variant="ghost" 
@@ -62,12 +57,11 @@ const MainLayout = () => {
           onClick={() => setForceMobileView(true)}
           className={isMobileView ? "bg-muted" : ""}
         >
-          <SmartphoneIcon size={18} />
+          <Smartphone size={18} />
         </Button>
       </div>
 
       <div className="flex flex-1">
-        {/* Mobile Sidebar (Sheet) */}
         {isMobileView ? (
           <Sheet>
             <SheetTrigger asChild>
@@ -83,7 +77,6 @@ const MainLayout = () => {
           <DesktopSidebar />
         )}
 
-        {/* Main Content */}
         <main className={`flex-1 bg-muted/30 ${isMobileView ? 'pt-14' : ''}`}>
           <div className="container mx-auto p-6">
             <Outlet />
