@@ -11,6 +11,7 @@ import AuthPage from "@/pages/Auth/AuthPage";
 import Dashboard from "@/pages/Dashboard";
 import CustomersPage from "@/pages/Customers/CustomersPage";
 import CustomerDetailPage from "@/pages/Customers/CustomerDetailPage";
+import CustomerForm from "@/pages/Customers/CustomerForm";
 import InvoicesPage from "@/pages/Invoices/InvoicesPage";
 import InvoiceDetailPage from "@/pages/Invoices/InvoiceDetailPage";
 import NewInvoiceForm from "@/pages/Invoices/NewInvoiceForm";
@@ -40,6 +41,7 @@ const App = () => (
             }>
               <Route index element={<Dashboard />} />
               <Route path="customers" element={<CustomersPage />} />
+              <Route path="customers/new" element={<CustomerForm />} />
               <Route path="customers/:id" element={<CustomerDetailPage />} />
               <Route path="invoices" element={<InvoicesPage />} />
               <Route path="invoices/:id" element={<InvoiceDetailPage />} />
