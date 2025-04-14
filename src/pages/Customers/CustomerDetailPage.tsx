@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { 
   Mail, Phone, MapPin, Building2, Tag, FileText, CreditCard, 
-  Edit, PenLine, Calendar, ArrowLeft, Mobile, MapPinned, 
+  Edit, PenLine, Calendar, ArrowLeft, Smartphone, MapPinned, 
 } from 'lucide-react';
 import { formatCurrency, formatPhoneNumber, formatDate } from '@/lib/formatters';
 import { useToast } from '@/hooks/use-toast';
@@ -195,7 +195,7 @@ const CustomerDetailPage = () => {
               
               {customer.mobile && (
                 <div className="flex items-start">
-                  <Mobile className="mr-3 h-4 w-4 mt-1 text-muted-foreground" />
+                  <Smartphone className="mr-3 h-4 w-4 mt-1 text-muted-foreground" />
                   <div>
                     <div className="text-sm text-muted-foreground">Mobile Number</div>
                     <div>{formatPhoneNumber(customer.mobile)}</div>

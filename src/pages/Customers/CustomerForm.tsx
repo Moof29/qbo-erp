@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -31,7 +30,6 @@ import { Separator } from '@/components/ui/separator';
 import { X, Save, Loader2 } from 'lucide-react';
 import { DrawerClose } from '@/components/ui/drawer';
 
-// Define form validation schema with Zod
 const customerSchema = z.object({
   display_name: z.string().min(1, { message: 'Display name is required' }),
   company_name: z.string().optional(),
@@ -71,7 +69,6 @@ const CustomerForm = ({ customerId }: CustomerFormProps) => {
   const queryClient = useQueryClient();
   const isEditMode = !!customerId;
   
-  // Define the form
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),
     defaultValues: {
@@ -102,7 +99,6 @@ const CustomerForm = ({ customerId }: CustomerFormProps) => {
     }
   });
 
-  // Fetch existing customer data if in edit mode
   const { isLoading: isLoadingCustomer } = useQuery({
     queryKey: ['customer', customerId],
     queryFn: async () => {
@@ -124,7 +120,6 @@ const CustomerForm = ({ customerId }: CustomerFormProps) => {
       }
       
       if (data) {
-        // Reset form with existing customer data
         form.reset({
           display_name: data.display_name || '',
           company_name: data.company_name || '',
@@ -158,7 +153,6 @@ const CustomerForm = ({ customerId }: CustomerFormProps) => {
     enabled: !!customerId,
   });
 
-  // Copy billing address to shipping address
   const copyBillingToShipping = () => {
     const billingValues = form.getValues();
     form.setValue('shipping_street', billingValues.billing_street || '');
@@ -168,24 +162,71 @@ const CustomerForm = ({ customerId }: CustomerFormProps) => {
     form.setValue('shipping_country', billingValues.billing_country || '');
   };
 
-  // Save customer mutation
   const saveCustomerMutation = useMutation({
     mutationFn: async (values: CustomerFormValues) => {
       if (isEditMode) {
-        // Update existing customer
         const { data, error } = await supabase
           .from('customers')
-          .update(values)
+          .update({
+            display_name: values.display_name,
+            company_name: values.company_name,
+            email: values.email || null,
+            phone: values.phone || null,
+            mobile: values.mobile || null,
+            fax: values.fax || null,
+            billing_street: values.billing_street || null,
+            billing_city: values.billing_city || null,
+            billing_state: values.billing_state || null,
+            billing_postal_code: values.billing_postal_code || null,
+            billing_country: values.billing_country || null,
+            shipping_street: values.shipping_street || null,
+            shipping_city: values.shipping_city || null,
+            shipping_state: values.shipping_state || null,
+            shipping_postal_code: values.shipping_postal_code || null,
+            shipping_country: values.shipping_country || null,
+            customer_type: values.customer_type || null,
+            tax_exempt_reason: values.tax_exempt_reason || null,
+            resale_number: values.resale_number || null,
+            preferred_delivery_method: values.preferred_delivery_method || null,
+            currency: values.currency,
+            notes: values.notes || null,
+            is_active: values.is_active,
+            open_balance: values.open_balance || 0
+          })
           .eq('id', customerId)
           .select();
         
         if (error) throw error;
         return data && data[0];
       } else {
-        // Create new customer
         const { data, error } = await supabase
           .from('customers')
-          .insert(values)
+          .insert({
+            display_name: values.display_name,
+            company_name: values.company_name,
+            email: values.email || null,
+            phone: values.phone || null,
+            mobile: values.mobile || null,
+            fax: values.fax || null,
+            billing_street: values.billing_street || null,
+            billing_city: values.billing_city || null,
+            billing_state: values.billing_state || null,
+            billing_postal_code: values.billing_postal_code || null,
+            billing_country: values.billing_country || null,
+            shipping_street: values.shipping_street || null,
+            shipping_city: values.shipping_city || null,
+            shipping_state: values.shipping_state || null,
+            shipping_postal_code: values.shipping_postal_code || null,
+            shipping_country: values.shipping_country || null,
+            customer_type: values.customer_type || null,
+            tax_exempt_reason: values.tax_exempt_reason || null,
+            resale_number: values.resale_number || null,
+            preferred_delivery_method: values.preferred_delivery_method || null,
+            currency: values.currency,
+            notes: values.notes || null,
+            is_active: values.is_active,
+            open_balance: values.open_balance || 0
+          })
           .select();
         
         if (error) throw error;
@@ -198,13 +239,11 @@ const CustomerForm = ({ customerId }: CustomerFormProps) => {
         description: `${data.display_name} has been ${isEditMode ? 'updated' : 'added'} to your customers`,
       });
       
-      // Invalidate relevant queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       if (isEditMode) {
         queryClient.invalidateQueries({ queryKey: ['customer', customerId] });
       }
       
-      // Navigate or close modal/drawer
       if (!isEditMode) {
         navigate(`/customers/${data.id}`);
       }
@@ -222,7 +261,6 @@ const CustomerForm = ({ customerId }: CustomerFormProps) => {
     saveCustomerMutation.mutate(values);
   };
 
-  // Function to copy shipping address to billing
   const copyShippingToBilling = () => {
     const shippingValues = form.getValues();
     form.setValue('billing_street', shippingValues.shipping_street || '');
