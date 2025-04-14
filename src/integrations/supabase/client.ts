@@ -21,14 +21,11 @@ const getClient = () => {
     // In development, we'll bypass RLS by using manual headers
     client.realtime.setAuth(devUserId);
     
-    // For all other requests, set a header that our RLS policies can check
-    const originalFetch = client.rest.headers['headers'];
-    client.rest.headers['headers'] = (...args) => {
-      const headers = originalFetch ? originalFetch(...args) : {};
-      return {
-        ...headers,
-        'x-dev-user-id': devUserId,
-      };
+    // For all other requests, add headers for bypassing RLS in development
+    const { global } = client.headers;
+    client.headers.global.headers = {
+      ...global.headers,
+      'x-dev-user-id': devUserId,
     };
   }
   
