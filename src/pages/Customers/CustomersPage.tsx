@@ -18,6 +18,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
+import { seedIfEmpty } from '@/utils/seedDummyData';
 
 interface Customer {
   id: string;
@@ -40,8 +41,13 @@ const CustomersPage = () => {
   const [sortField, setSortField] = useState<SortField>('display_name');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
+  // Check for dummy data on initial load
+  useEffect(() => {
+    seedIfEmpty();
+  }, []);
+
   // Fetch customers from Supabase
-  const { data: customers = [], isLoading, error } = useQuery({
+  const { data: customers = [], isLoading, error, refetch } = useQuery({
     queryKey: ['customers'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -69,6 +75,13 @@ const CustomersPage = () => {
       setSortField(field);
       setSortOrder('asc');
     }
+  };
+
+  // Seed dummy data function
+  const handleSeedDummyData = () => {
+    seedIfEmpty().then(() => {
+      refetch();
+    });
   };
 
   // Filter and sort customers
@@ -112,10 +125,21 @@ const CustomersPage = () => {
         title="Customers" 
         subtitle="Manage your customer accounts"
         actions={
-          <Button onClick={() => navigate('/customers/new')} className="gap-2">
-            <UserPlus className="h-4 w-4" />
-            New Customer
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={handleSeedDummyData} 
+              variant="outline" 
+              className="gap-2"
+              disabled={isLoading}
+            >
+              <Users className="h-4 w-4" />
+              Add Sample Data
+            </Button>
+            <Button onClick={() => navigate('/customers/new')} className="gap-2">
+              <UserPlus className="h-4 w-4" />
+              New Customer
+            </Button>
+          </div>
         }
       />
       

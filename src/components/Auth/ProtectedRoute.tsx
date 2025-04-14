@@ -25,9 +25,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  // If bypass is enabled, allow access without authentication
+  // Enable bypass for development purposes
+  // This will set a default anonymous user
   if (bypassAuth) {
-    console.log('Auth bypass is enabled, skipping auth check');
+    console.log('Auth bypass is enabled, skipping auth check and using anonymous user');
     return <>{children}</>;
   }
 

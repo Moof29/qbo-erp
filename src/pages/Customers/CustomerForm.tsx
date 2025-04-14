@@ -164,6 +164,11 @@ const CustomerForm = ({ customerId }: CustomerFormProps) => {
 
   const saveCustomerMutation = useMutation({
     mutationFn: async (values: CustomerFormValues) => {
+      const headers: Record<string, string> = {};
+      if (import.meta.env.DEV || import.meta.env.VITE_BYPASS_AUTH === 'true') {
+        headers['x-dev-user-id'] = '00000000-0000-0000-0000-000000000000';
+      }
+
       if (isEditMode) {
         const { data, error } = await supabase
           .from('customers')
@@ -196,7 +201,10 @@ const CustomerForm = ({ customerId }: CustomerFormProps) => {
           .eq('id', customerId)
           .select();
         
-        if (error) throw error;
+        if (error) {
+          console.error("Error updating customer:", error);
+          throw error;
+        }
         return data && data[0];
       } else {
         const { data, error } = await supabase
@@ -229,7 +237,10 @@ const CustomerForm = ({ customerId }: CustomerFormProps) => {
           })
           .select();
         
-        if (error) throw error;
+        if (error) {
+          console.error("Error creating customer:", error);
+          throw error;
+        }
         return data && data[0];
       }
     },
