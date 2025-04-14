@@ -16,7 +16,7 @@ import { formatCurrency, formatPhoneNumber, formatDate } from '@/lib/formatters'
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import CustomerForm from './CustomerForm';
 
 interface CustomerNote {
@@ -129,19 +129,19 @@ const CustomerDetailPage = () => {
           subtitle={customer.company_name || 'Individual Customer'}
           actions={
             <div className="flex flex-wrap gap-2">
-              <Drawer>
-                <DrawerTrigger asChild>
+              <Sheet>
+                <SheetTrigger asChild>
                   <Button variant="outline">
                     <Edit className="mr-2 h-4 w-4" />
                     Edit Customer
                   </Button>
-                </DrawerTrigger>
-                <DrawerContent className="h-[90vh] overflow-y-auto">
-                  <div className="p-4 md:p-6 max-w-4xl mx-auto">
+                </SheetTrigger>
+                <SheetContent className="w-full sm:max-w-xl md:max-w-2xl overflow-y-auto">
+                  <div className="p-4 md:p-6">
                     <CustomerForm customerId={customer.id} />
                   </div>
-                </DrawerContent>
-              </Drawer>
+                </SheetContent>
+              </Sheet>
               
               <Button onClick={() => navigate(`/invoices/new?customer=${id}`)}>
                 <FileText className="mr-2 h-4 w-4" />

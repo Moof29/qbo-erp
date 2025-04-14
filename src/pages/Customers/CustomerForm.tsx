@@ -274,12 +274,10 @@ const CustomerForm = ({ customerId }: CustomerFormProps) => {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold">{isEditMode ? 'Edit' : 'New'} Customer</h2>
-        <DrawerClose asChild>
-          <Button variant="ghost" size="icon">
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
-          </Button>
-        </DrawerClose>
+        <Button variant="ghost" size="icon" onClick={() => navigate('/customers')}>
+          <X className="h-4 w-4" />
+          <span className="sr-only">Close</span>
+        </Button>
       </div>
       
       <Form {...form}>
@@ -707,15 +705,13 @@ const CustomerForm = ({ customerId }: CustomerFormProps) => {
           </div>
           
           <div className="flex justify-end gap-4 pt-4 border-t">
-            <DrawerClose asChild>
-              <Button type="button" variant="outline">
-                Cancel
-              </Button>
-            </DrawerClose>
+            <Button type="button" variant="outline" onClick={() => navigate('/customers')}>
+              Cancel
+            </Button>
             
             <Button 
               type="submit" 
-              disabled={saveCustomerMutation.isPending || isLoadingCustomer}
+              disabled={saveCustomerMutation.isPending}
             >
               {saveCustomerMutation.isPending && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
