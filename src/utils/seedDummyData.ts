@@ -122,6 +122,15 @@ const dummyCustomers = [
 
 export const seedDummyCustomers = async () => {
   try {
+    // For development mode, need to manually set a user ID
+    // This aligns with the client.ts approach
+    const headers: Record<string, string> = {};
+    const devMode = import.meta.env.DEV || import.meta.env.VITE_BYPASS_AUTH === 'true';
+    
+    if (devMode) {
+      headers['x-dev-user-id'] = '00000000-0000-0000-0000-000000000000';
+    }
+    
     const { data, error } = await supabase
       .from('customers')
       .insert(dummyCustomers)

@@ -11,18 +11,22 @@ const devMode = import.meta.env.DEV || import.meta.env.VITE_BYPASS_AUTH === 'tru
 
 // Create a version of the client with anonymous access for development
 const getClient = () => {
+  // Use a constant UUID for development that will be consistent
+  const devUserId = '00000000-0000-0000-0000-000000000000';
+
+  // Create client with appropriate headers for dev mode
   const client = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true
+    },
     global: {
-      headers: devMode ? { 'x-dev-user-id': '00000000-0000-0000-0000-000000000000' } : {}
+      headers: devMode ? { 'x-dev-user-id': devUserId } : {}
     }
   });
   
   // If in development mode, also set auth for realtime
   if (devMode) {
-    // Use a constant UUID for development that will be consistent
-    const devUserId = '00000000-0000-0000-0000-000000000000';
-    
-    // In development, set auth for realtime connections
     client.realtime.setAuth(devUserId);
   }
   
