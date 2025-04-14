@@ -11,31 +11,19 @@ const devMode = import.meta.env.DEV || import.meta.env.VITE_BYPASS_AUTH === 'tru
 
 // Create a version of the client with anonymous access for development
 const getClient = () => {
-  const client = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  const client = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    global: {
+      headers: devMode ? { 'x-dev-user-id': '00000000-0000-0000-0000-000000000000' } : {}
+    }
+  });
   
-  // If in development mode, use service role or anonymous ID
+  // If in development mode, also set auth for realtime
   if (devMode) {
     // Use a constant UUID for development that will be consistent
     const devUserId = '00000000-0000-0000-0000-000000000000';
     
-    // In development, we'll bypass RLS by using manual headers
+    // In development, set auth for realtime connections
     client.realtime.setAuth(devUserId);
-    
-    // For REST requests, add custom headers by creating 
-    // a custom fetch function that adds the headers
-    const originalFetch = client.rest.fetchWithAuth.bind(client.rest);
-    client.rest.fetchWithAuth = async (url, options) => {
-      if (!options) options = {};
-      if (!options.headers) options.headers = {};
-      
-      // Add dev user ID to headers
-      options.headers = {
-        ...options.headers,
-        'x-dev-user-id': devUserId
-      };
-      
-      return originalFetch(url, options);
-    };
   }
   
   return client;
