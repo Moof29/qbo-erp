@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
@@ -25,6 +24,8 @@ type AuthContextType = {
   signOut: () => Promise<void>;
   refreshRoles: () => Promise<void>;
   hasRole: (role: Role) => boolean;
+  bypassAuth: boolean;
+  setBypassAuth: (bypass: boolean) => void;
 };
 
 export const AuthContext = createContext<AuthContextType>({
@@ -36,6 +37,8 @@ export const AuthContext = createContext<AuthContextType>({
   signOut: async () => {},
   refreshRoles: async () => {},
   hasRole: () => false,
+  bypassAuth: false,
+  setBypassAuth: () => {},
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -43,7 +46,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [userRoles, setUserRoles] = useState<Role[]>([]);
+  const [bypassAuth, setBypassAuth] = useState(() => {
+    const storedBypass = localStorage.getItem('bypassAuth');
+    return storedBypass ? JSON.parse(storedBypass) : false;
+  });
   const { toast } = useToast();
+
+  useEffect(() => {
+    localStorage.setItem('bypassAuth', JSON.stringify(bypassAuth));
+  }, [bypassAuth]);
 
   const fetchUserRoles = async (userId: string) => {
     try {
@@ -68,7 +79,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (user) {
       const roles = await fetchUserRoles(user.id);
       
-      // Update the user object with roles
       setUser(currentUser => {
         if (!currentUser) return null;
         return { ...currentUser, roles };
@@ -79,13 +89,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setSession(session);
         
         if (session?.user) {
-          // Use setTimeout to prevent deadlock
           setTimeout(async () => {
             const roles = await fetchUserRoles(session.user.id);
             setUser({ ...session.user, roles });
@@ -100,7 +108,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
-    // THEN check for existing session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       
@@ -208,6 +215,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         signOut,
         refreshRoles,
         hasRole,
+        bypassAuth,
+        setBypassAuth,
       }}
     >
       {children}

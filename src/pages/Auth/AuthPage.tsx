@@ -8,12 +8,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 
 const AuthPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('login');
   const navigate = useNavigate();
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, signUp, user, bypassAuth, setBypassAuth } = useAuth();
 
   // Login form state
   const [loginEmail, setLoginEmail] = useState('');
@@ -25,12 +26,12 @@ const AuthPage: React.FC = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
 
-  // If user is already logged in, redirect to home page
+  // If user is already logged in or bypass is enabled, redirect to home page
   React.useEffect(() => {
-    if (user) {
+    if (user || (bypassAuth && !window.location.pathname.includes('/auth'))) {
       navigate('/');
     }
-  }, [user, navigate]);
+  }, [user, bypassAuth, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,6 +66,14 @@ const AuthPage: React.FC = () => {
       setIsLoading(false);
     }
   };
+  
+  const handleBypassToggle = () => {
+    setBypassAuth(!bypassAuth);
+    if (!bypassAuth) {
+      // When enabling bypass, redirect to home
+      navigate('/');
+    }
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
@@ -72,6 +81,20 @@ const AuthPage: React.FC = () => {
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-primary">ERP Flow Nexus</h1>
           <p className="text-muted-foreground mt-2">Sign in to your account to continue</p>
+        </div>
+        
+        {/* Development bypass toggle */}
+        <div className="mb-6 p-4 bg-yellow-100/50 rounded-lg border border-yellow-200">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <h4 className="font-medium text-yellow-800">Development Mode</h4>
+              <p className="text-sm text-yellow-700">Bypass authentication while developing</p>
+            </div>
+            <Switch
+              checked={bypassAuth}
+              onCheckedChange={handleBypassToggle}
+            />
+          </div>
         </div>
         
         <Tabs defaultValue="login" value={activeTab} onValueChange={setActiveTab}>

@@ -14,7 +14,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requiredRole,
   redirectTo = '/auth'
 }) => {
-  const { user, loading, hasRole } = useAuth();
+  const { user, loading, hasRole, bypassAuth } = useAuth();
 
   // Show loading state
   if (loading) {
@@ -23,6 +23,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         <div className="animate-spin rounded-full border-t-2 border-primary h-12 w-12" />
       </div>
     );
+  }
+
+  // If bypass is enabled, allow access without authentication
+  if (bypassAuth) {
+    return <>{children}</>;
   }
 
   // Not authenticated
