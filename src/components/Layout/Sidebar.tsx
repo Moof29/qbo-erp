@@ -11,15 +11,25 @@ import {
   Settings, 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/context/AuthContext';
+import UserProfile from '@/components/Auth/UserProfile';
 
 interface NavItemProps {
   to: string;
   icon: React.ElementType;
   children: React.ReactNode;
   collapsed?: boolean;
+  requiredRole?: 'admin' | 'sales_rep' | 'warehouse';
 }
 
-const NavItem = ({ to, icon: Icon, children, collapsed }: NavItemProps) => {
+const NavItem = ({ to, icon: Icon, children, collapsed, requiredRole }: NavItemProps) => {
+  const { hasRole } = useAuth();
+  
+  // If this item requires a specific role and user doesn't have it, don't show the item
+  if (requiredRole && !hasRole(requiredRole)) {
+    return null;
+  }
+
   return (
     <NavLink 
       to={to} 
@@ -43,6 +53,8 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ collapsed = false }: SidebarProps) => {
+  const { user } = useAuth();
+  
   return (
     <div className="flex flex-col h-full">
       {!collapsed && (
@@ -60,28 +72,23 @@ const Sidebar = ({ collapsed = false }: SidebarProps) => {
         <NavItem to="/bills" icon={Receipt} collapsed={collapsed}>Bills</NavItem>
         
         <div className="pt-4 mt-4 border-t">
-          <NavItem to="/settings" icon={Settings} collapsed={collapsed}>Settings</NavItem>
+          <NavItem to="/settings" icon={Settings} collapsed={collapsed} requiredRole="admin">Settings</NavItem>
         </div>
       </nav>
       
-      {!collapsed && (
-        <div className="p-3 border-t flex items-center">
-          <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground">
-            JD
+      {user ? (
+        !collapsed ? (
+          <div className="p-3 border-t">
+            <UserProfile />
           </div>
-          <div className="ml-3">
-            <p className="text-sm font-medium">John Doe</p>
-            <p className="text-xs text-muted-foreground">Administrator</p>
+        ) : (
+          <div className="p-3 border-t flex justify-center">
+            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground">
+              {user.email?.charAt(0).toUpperCase() || 'U'}
+            </div>
           </div>
-        </div>
-      )}
-      {collapsed && (
-        <div className="p-3 border-t flex justify-center">
-          <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground">
-            JD
-          </div>
-        </div>
-      )}
+        )
+      ) : null}
     </div>
   );
 };

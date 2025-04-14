@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
-import { Menu, ChevronLeft, ChevronRight, Monitor, Smartphone } from 'lucide-react';
+import { Outlet, useNavigate } from 'react-router-dom';
+import { Menu, ChevronLeft, ChevronRight, Monitor, Smartphone, LogIn } from 'lucide-react';
 import { 
   Sheet,
   SheetContent,
@@ -9,8 +10,11 @@ import {
 import Sidebar from './Sidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/context/AuthContext';
 
 const MainLayout = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const isMobileDevice = useIsMobile();
   const [collapsed, setCollapsed] = useState(false);
   const [forceMobileView, setForceMobileView] = useState(false);
@@ -43,6 +47,17 @@ const MainLayout = () => {
   return (
     <div className="flex min-h-screen flex-col">
       <div className="fixed top-4 right-4 z-40 bg-white border rounded-md shadow-sm flex">
+        {!user && (
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => navigate('/auth')}
+            title="Login"
+            className="mr-2"
+          >
+            <LogIn size={18} />
+          </Button>
+        )}
         <Button 
           variant="ghost" 
           size="icon"

@@ -9,16 +9,165 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      customers: {
+        Row: {
+          balance: number | null
+          billing_address: string | null
+          billing_city: string | null
+          billing_country: string | null
+          billing_postal_code: string | null
+          billing_state: string | null
+          billing_street: string | null
+          company_name: string | null
+          created_at: string | null
+          currency: string | null
+          customer_type: string | null
+          display_name: string
+          email: string | null
+          fax: string | null
+          id: string
+          is_active: boolean | null
+          mobile: string | null
+          notes: string | null
+          open_balance: number | null
+          phone: string | null
+          preferred_delivery_method: string | null
+          qbo_id: string | null
+          resale_number: string | null
+          shipping_city: string | null
+          shipping_country: string | null
+          shipping_postal_code: string | null
+          shipping_state: string | null
+          shipping_street: string | null
+          tax_exempt_reason: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          balance?: number | null
+          billing_address?: string | null
+          billing_city?: string | null
+          billing_country?: string | null
+          billing_postal_code?: string | null
+          billing_state?: string | null
+          billing_street?: string | null
+          company_name?: string | null
+          created_at?: string | null
+          currency?: string | null
+          customer_type?: string | null
+          display_name: string
+          email?: string | null
+          fax?: string | null
+          id?: string
+          is_active?: boolean | null
+          mobile?: string | null
+          notes?: string | null
+          open_balance?: number | null
+          phone?: string | null
+          preferred_delivery_method?: string | null
+          qbo_id?: string | null
+          resale_number?: string | null
+          shipping_city?: string | null
+          shipping_country?: string | null
+          shipping_postal_code?: string | null
+          shipping_state?: string | null
+          shipping_street?: string | null
+          tax_exempt_reason?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          balance?: number | null
+          billing_address?: string | null
+          billing_city?: string | null
+          billing_country?: string | null
+          billing_postal_code?: string | null
+          billing_state?: string | null
+          billing_street?: string | null
+          company_name?: string | null
+          created_at?: string | null
+          currency?: string | null
+          customer_type?: string | null
+          display_name?: string
+          email?: string | null
+          fax?: string | null
+          id?: string
+          is_active?: boolean | null
+          mobile?: string | null
+          notes?: string | null
+          open_balance?: number | null
+          phone?: string | null
+          preferred_delivery_method?: string | null
+          qbo_id?: string | null
+          resale_number?: string | null
+          shipping_city?: string | null
+          shipping_country?: string | null
+          shipping_postal_code?: string | null
+          shipping_state?: string | null
+          shipping_street?: string | null
+          tax_exempt_reason?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          first_name: string | null
+          id: string
+          last_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          user_id: string
+          requested_role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "sales_rep" | "warehouse"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +282,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "sales_rep", "warehouse"],
+    },
   },
 } as const
