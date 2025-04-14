@@ -9,28 +9,21 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // Check for development mode to bypass RLS
 const devMode = import.meta.env.DEV || import.meta.env.VITE_BYPASS_AUTH === 'true';
 
-// Create a version of the client with anonymous access for development
-const getClient = () => {
-  // Use a constant UUID for development that will be consistent
-  const devUserId = '00000000-0000-0000-0000-000000000000';
+// Use a constant UUID for development that will be consistent
+const devUserId = '00000000-0000-0000-0000-000000000000';
 
-  // Create client with appropriate headers for dev mode
-  const client = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-    auth: {
-      autoRefreshToken: true,
-      persistSession: true
-    },
-    global: {
-      headers: devMode ? { 'x-dev-user-id': devUserId } : {}
-    }
-  });
-  
-  // If in development mode, also set auth for realtime
-  if (devMode) {
-    client.realtime.setAuth(devUserId);
+// Create Supabase client with proper configuration
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true
+  },
+  global: {
+    headers: devMode ? { 'x-dev-user-id': devUserId } : {}
   }
-  
-  return client;
-};
+});
 
-export const supabase = getClient();
+// Set auth for realtime if in development mode
+if (devMode) {
+  supabase.realtime.setAuth(devUserId);
+}
