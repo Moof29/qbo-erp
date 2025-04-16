@@ -12,3 +12,76 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     persistSession: true
   }
 });
+
+// Define interfaces for organization and user data
+export interface Organization {
+  id: string;
+  name: string;
+  industry: string | null;
+  plan_type: string | null;
+  timezone: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface UserOrganization {
+  id: string;
+  user_id: string;
+  organization_id: string;
+  role: string;
+  is_active: boolean;
+}
+
+// Helper functions for organizations
+export const fetchUserOrganizations = async (userId: string) => {
+  const { data, error } = await supabase
+    .from('user_organizations')
+    .select(`
+      id,
+      organization_id,
+      role,
+      organizations (
+        id,
+        name,
+        industry,
+        plan_type,
+        timezone,
+        is_active
+      )
+    `)
+    .eq('user_id', userId)
+    .eq('is_active', true);
+    
+  if (error) throw error;
+  return data;
+};
+
+export const createOrganization = async (organizationData: Partial<Organization>) => {
+  const { data, error } = await supabase
+    .from('organizations')
+    .insert(organizationData)
+    .select()
+    .single();
+    
+  if (error) throw error;
+  return data;
+};
+
+export const linkUserToOrganization = async (
+  userId: string, 
+  organizationId: string, 
+  role: string = 'admin'
+) => {
+  const { data, error } = await supabase
+    .from('user_organizations')
+    .insert({
+      user_id: userId,
+      organization_id: organizationId,
+      role,
+      accepted_at: new Date().toISOString()
+    })
+    .select();
+    
+  if (error) throw error;
+  return data;
+};

@@ -2,6 +2,13 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth, Role } from '@/context/AuthContext';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Loader2, Plus } from 'lucide-react';
+import { OrganizationSelector } from '@/components/Organization/OrganizationSelector';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -14,7 +21,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requiredRole,
   redirectTo = '/auth'
 }) => {
-  const { user, loading, hasRole, bypassAuth } = useAuth();
+  const { user, loading, hasRole, bypassAuth, organizations, currentOrganization } = useAuth();
 
   // Show loading state
   if (loading) {
@@ -36,6 +43,17 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   if (!user) {
     console.log('No user found, redirecting to login');
     return <Navigate to={redirectTo} replace />;
+  }
+
+  // Check if user needs to select an organization
+  if (organizations.length > 0 && !currentOrganization) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-muted/30 p-4">
+        <div className="w-full max-w-md">
+          <OrganizationSelector />
+        </div>
+      </div>
+    );
   }
 
   // Check for role requirement

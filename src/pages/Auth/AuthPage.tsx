@@ -9,12 +9,14 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const AuthPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('login');
   const navigate = useNavigate();
-  const { signIn, signUp, user, bypassAuth, setBypassAuth } = useAuth();
+  const { signIn, signUp, user, bypassAuth, setBypassAuth, organizations, createNewOrganization } = useAuth();
 
   // Login form state
   const [loginEmail, setLoginEmail] = useState('');
@@ -25,6 +27,14 @@ const AuthPage: React.FC = () => {
   const [signupPassword, setSignupPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [organizationName, setOrganizationName] = useState('');
+  const [industry, setIndustry] = useState('');
+  
+  // Organization selection after login
+  const [selectedOrgId, setSelectedOrgId] = useState<string>('');
+  const [showCreateOrg, setShowCreateOrg] = useState(false);
+  const [newOrgName, setNewOrgName] = useState('');
+  const [newOrgIndustry, setNewOrgIndustry] = useState('');
 
   // If user is already logged in or bypass is enabled, redirect to home page
   React.useEffect(() => {
@@ -56,12 +66,26 @@ const AuthPage: React.FC = () => {
       const { success } = await signUp(signupEmail, signupPassword, firstName, lastName);
       
       if (success) {
-        setActiveTab('login');
-        setSignupEmail('');
-        setSignupPassword('');
-        setFirstName('');
-        setLastName('');
+        // Create organization for the new user
+        if (organizationName) {
+          await createNewOrganization(organizationName, industry || undefined);
+        }
+        
+        navigate('/');
       }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleCreateOrganization = async () => {
+    setIsLoading(true);
+    try {
+      await createNewOrganization(newOrgName, newOrgIndustry || undefined);
+      setShowCreateOrg(false);
+      setNewOrgName('');
+      setNewOrgIndustry('');
+      navigate('/');
     } finally {
       setIsLoading(false);
     }
@@ -192,11 +216,48 @@ const AuthPage: React.FC = () => {
                       required
                     />
                   </div>
+                  
+                  <Separator className="my-4" />
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="organizationName" className="text-base font-medium">Organization Details</Label>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Create your organization to get started
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="organizationName">Organization Name</Label>
+                      <Input 
+                        id="organizationName" 
+                        value={organizationName}
+                        onChange={e => setOrganizationName(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="industry">Industry (Optional)</Label>
+                      <Select value={industry} onValueChange={setIndustry}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select industry" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="retail">Retail</SelectItem>
+                          <SelectItem value="manufacturing">Manufacturing</SelectItem>
+                          <SelectItem value="services">Professional Services</SelectItem>
+                          <SelectItem value="healthcare">Healthcare</SelectItem>
+                          <SelectItem value="technology">Technology</SelectItem>
+                          <SelectItem value="education">Education</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </CardContent>
                 <CardFooter>
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Create Account
+                    Create Account & Organization
                   </Button>
                 </CardFooter>
               </form>
