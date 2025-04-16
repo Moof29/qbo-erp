@@ -3,9 +3,11 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
 
 export const useCustomerDetail = (customerId: string | undefined) => {
   const { toast } = useToast();
+  const { currentOrganization } = useAuth();
   
   // Fetch customer details
   const { data: customer, isLoading, error } = useQuery({
@@ -14,7 +16,7 @@ export const useCustomerDetail = (customerId: string | undefined) => {
       if (!customerId) throw new Error('Customer ID is required');
       
       const { data, error } = await supabase
-        .from('customers')
+        .from('customer_profile')
         .select('*')
         .eq('id', customerId)
         .single();

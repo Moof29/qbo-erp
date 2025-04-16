@@ -9,104 +9,153 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      customers: {
+      customer_profile: {
         Row: {
           balance: number | null
-          billing_address: string | null
+          billing_address_line1: string | null
+          billing_address_line2: string | null
           billing_city: string | null
           billing_country: string | null
           billing_postal_code: string | null
           billing_state: string | null
-          billing_street: string | null
           company_name: string | null
           created_at: string | null
-          currency: string | null
-          customer_type: string | null
+          created_by: string | null
+          credit_limit: number | null
+          currency_id: string | null
+          custom_fields: Json | null
           display_name: string
           email: string | null
           fax: string | null
+          first_name: string | null
           id: string
           is_active: boolean | null
+          last_name: string | null
+          last_sync_at: string | null
           mobile: string | null
           notes: string | null
-          open_balance: number | null
+          organization_id: string | null
+          payment_terms: string | null
           phone: string | null
-          preferred_delivery_method: string | null
           qbo_id: string | null
-          resale_number: string | null
+          shipping_address_line1: string | null
+          shipping_address_line2: string | null
           shipping_city: string | null
           shipping_country: string | null
           shipping_postal_code: string | null
           shipping_state: string | null
-          shipping_street: string | null
-          tax_exempt_reason: string | null
+          sync_status: string | null
+          tax_exempt: boolean | null
+          tax_id: string | null
           updated_at: string | null
+          updated_by: string | null
+          website: string | null
         }
         Insert: {
           balance?: number | null
-          billing_address?: string | null
+          billing_address_line1?: string | null
+          billing_address_line2?: string | null
           billing_city?: string | null
           billing_country?: string | null
           billing_postal_code?: string | null
           billing_state?: string | null
-          billing_street?: string | null
           company_name?: string | null
           created_at?: string | null
-          currency?: string | null
-          customer_type?: string | null
+          created_by?: string | null
+          credit_limit?: number | null
+          currency_id?: string | null
+          custom_fields?: Json | null
           display_name: string
           email?: string | null
           fax?: string | null
+          first_name?: string | null
           id?: string
           is_active?: boolean | null
+          last_name?: string | null
+          last_sync_at?: string | null
           mobile?: string | null
           notes?: string | null
-          open_balance?: number | null
+          organization_id?: string | null
+          payment_terms?: string | null
           phone?: string | null
-          preferred_delivery_method?: string | null
           qbo_id?: string | null
-          resale_number?: string | null
+          shipping_address_line1?: string | null
+          shipping_address_line2?: string | null
           shipping_city?: string | null
           shipping_country?: string | null
           shipping_postal_code?: string | null
           shipping_state?: string | null
-          shipping_street?: string | null
-          tax_exempt_reason?: string | null
+          sync_status?: string | null
+          tax_exempt?: boolean | null
+          tax_id?: string | null
           updated_at?: string | null
+          updated_by?: string | null
+          website?: string | null
         }
         Update: {
           balance?: number | null
-          billing_address?: string | null
+          billing_address_line1?: string | null
+          billing_address_line2?: string | null
           billing_city?: string | null
           billing_country?: string | null
           billing_postal_code?: string | null
           billing_state?: string | null
-          billing_street?: string | null
           company_name?: string | null
           created_at?: string | null
-          currency?: string | null
-          customer_type?: string | null
+          created_by?: string | null
+          credit_limit?: number | null
+          currency_id?: string | null
+          custom_fields?: Json | null
           display_name?: string
           email?: string | null
           fax?: string | null
+          first_name?: string | null
           id?: string
           is_active?: boolean | null
+          last_name?: string | null
+          last_sync_at?: string | null
           mobile?: string | null
           notes?: string | null
-          open_balance?: number | null
+          organization_id?: string | null
+          payment_terms?: string | null
           phone?: string | null
-          preferred_delivery_method?: string | null
           qbo_id?: string | null
-          resale_number?: string | null
+          shipping_address_line1?: string | null
+          shipping_address_line2?: string | null
           shipping_city?: string | null
           shipping_country?: string | null
           shipping_postal_code?: string | null
           shipping_state?: string | null
-          shipping_street?: string | null
-          tax_exempt_reason?: string | null
+          sync_status?: string | null
+          tax_exempt?: boolean | null
+          tax_id?: string | null
           updated_at?: string | null
+          updated_by?: string | null
+          website?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "customer_profile_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_profile_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_profile_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       organizations: {
         Row: {

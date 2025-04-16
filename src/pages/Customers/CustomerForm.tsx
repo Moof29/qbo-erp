@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,32 +29,38 @@ import { supabase } from '@/integrations/supabase/client';
 import { Separator } from '@/components/ui/separator';
 import { X, Save, Loader2 } from 'lucide-react';
 import { DrawerClose } from '@/components/ui/drawer';
+import { useAuth } from '@/context/AuthContext';
 
 const customerSchema = z.object({
   display_name: z.string().min(1, { message: 'Display name is required' }),
   company_name: z.string().optional(),
+  first_name: z.string().optional(),
+  last_name: z.string().optional(),
   email: z.string().email({ message: 'Invalid email address' }).optional().or(z.literal('')),
   phone: z.string().optional(),
   mobile: z.string().optional(),
   fax: z.string().optional(),
-  billing_street: z.string().optional(),
+  website: z.string().optional(),
+  billing_address_line1: z.string().optional(),
+  billing_address_line2: z.string().optional(),
   billing_city: z.string().optional(),
   billing_state: z.string().optional(),
   billing_postal_code: z.string().optional(),
   billing_country: z.string().optional(),
-  shipping_street: z.string().optional(),
+  shipping_address_line1: z.string().optional(),
+  shipping_address_line2: z.string().optional(),
   shipping_city: z.string().optional(),
   shipping_state: z.string().optional(),
   shipping_postal_code: z.string().optional(),
   shipping_country: z.string().optional(),
-  customer_type: z.string().optional(),
-  tax_exempt_reason: z.string().optional(),
-  resale_number: z.string().optional(),
-  preferred_delivery_method: z.enum(['Email', 'Print', 'None']).optional(),
-  currency: z.string().default('USD'),
+  tax_exempt: z.boolean().default(false),
+  tax_id: z.string().optional(),
+  currency_id: z.string().default('USD'),
+  payment_terms: z.string().optional(),
+  credit_limit: z.number().optional(),
   notes: z.string().optional(),
   is_active: z.boolean().default(true),
-  open_balance: z.number().optional(),
+  balance: z.number().optional(),
 });
 
 type CustomerFormValues = z.infer<typeof customerSchema>;
@@ -67,6 +73,7 @@ const CustomerForm = ({ customerId }: CustomerFormProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user, currentOrganization } = useAuth();
   const isEditMode = !!customerId;
   
   const form = useForm<CustomerFormValues>({
@@ -74,28 +81,33 @@ const CustomerForm = ({ customerId }: CustomerFormProps) => {
     defaultValues: {
       display_name: '',
       company_name: '',
+      first_name: '',
+      last_name: '',
       email: '',
       phone: '',
       mobile: '',
       fax: '',
-      billing_street: '',
+      website: '',
+      billing_address_line1: '',
+      billing_address_line2: '',
       billing_city: '',
       billing_state: '',
       billing_postal_code: '',
       billing_country: '',
-      shipping_street: '',
+      shipping_address_line1: '',
+      shipping_address_line2: '',
       shipping_city: '',
       shipping_state: '',
       shipping_postal_code: '',
       shipping_country: '',
-      customer_type: '',
-      tax_exempt_reason: '',
-      resale_number: '',
-      preferred_delivery_method: 'Email',
-      currency: 'USD',
+      tax_exempt: false,
+      tax_id: '',
+      currency_id: 'USD',
+      payment_terms: '',
+      credit_limit: 0,
       notes: '',
       is_active: true,
-      open_balance: 0,
+      balance: 0,
     }
   });
 
@@ -105,7 +117,7 @@ const CustomerForm = ({ customerId }: CustomerFormProps) => {
       if (!customerId) return null;
       
       const { data, error } = await supabase
-        .from('customers')
+        .from('customer_profile')
         .select('*')
         .eq('id', customerId)
         .single();
@@ -123,28 +135,33 @@ const CustomerForm = ({ customerId }: CustomerFormProps) => {
         form.reset({
           display_name: data.display_name || '',
           company_name: data.company_name || '',
+          first_name: data.first_name || '',
+          last_name: data.last_name || '',
           email: data.email || '',
           phone: data.phone || '',
           mobile: data.mobile || '',
           fax: data.fax || '',
-          billing_street: data.billing_street || '',
+          website: data.website || '',
+          billing_address_line1: data.billing_address_line1 || '',
+          billing_address_line2: data.billing_address_line2 || '',
           billing_city: data.billing_city || '',
           billing_state: data.billing_state || '',
           billing_postal_code: data.billing_postal_code || '',
           billing_country: data.billing_country || '',
-          shipping_street: data.shipping_street || '',
+          shipping_address_line1: data.shipping_address_line1 || '',
+          shipping_address_line2: data.shipping_address_line2 || '',
           shipping_city: data.shipping_city || '',
           shipping_state: data.shipping_state || '',
           shipping_postal_code: data.shipping_postal_code || '',
           shipping_country: data.shipping_country || '',
-          customer_type: data.customer_type || '',
-          tax_exempt_reason: data.tax_exempt_reason || '',
-          resale_number: data.resale_number || '',
-          preferred_delivery_method: (data.preferred_delivery_method as any) || 'Email',
-          currency: data.currency || 'USD',
+          tax_exempt: data.tax_exempt || false,
+          tax_id: data.tax_id || '',
+          currency_id: data.currency_id || 'USD',
+          payment_terms: data.payment_terms || '',
+          credit_limit: data.credit_limit || 0,
           notes: data.notes || '',
           is_active: data.is_active !== false,
-          open_balance: data.open_balance || 0,
+          balance: data.balance || 0,
         });
       }
       
@@ -155,48 +172,65 @@ const CustomerForm = ({ customerId }: CustomerFormProps) => {
 
   const copyBillingToShipping = () => {
     const billingValues = form.getValues();
-    form.setValue('shipping_street', billingValues.billing_street || '');
+    form.setValue('shipping_address_line1', billingValues.billing_address_line1 || '');
+    form.setValue('shipping_address_line2', billingValues.billing_address_line2 || '');
     form.setValue('shipping_city', billingValues.billing_city || '');
     form.setValue('shipping_state', billingValues.billing_state || '');
     form.setValue('shipping_postal_code', billingValues.billing_postal_code || '');
     form.setValue('shipping_country', billingValues.billing_country || '');
   };
 
+  const copyShippingToBilling = () => {
+    const shippingValues = form.getValues();
+    form.setValue('billing_address_line1', shippingValues.shipping_address_line1 || '');
+    form.setValue('billing_address_line2', shippingValues.shipping_address_line2 || '');
+    form.setValue('billing_city', shippingValues.shipping_city || '');
+    form.setValue('billing_state', shippingValues.shipping_state || '');
+    form.setValue('billing_postal_code', shippingValues.shipping_postal_code || '');
+    form.setValue('billing_country', shippingValues.shipping_country || '');
+  };
+
   const saveCustomerMutation = useMutation({
     mutationFn: async (values: CustomerFormValues) => {
-      const headers: Record<string, string> = {};
-      if (import.meta.env.DEV || import.meta.env.VITE_BYPASS_AUTH === 'true') {
-        headers['x-dev-user-id'] = '00000000-0000-0000-0000-000000000000';
+      if (!currentOrganization?.id || !user?.id) {
+        throw new Error('Missing organization or user');
       }
 
       if (isEditMode) {
         const { data, error } = await supabase
-          .from('customers')
+          .from('customer_profile')
           .update({
             display_name: values.display_name,
             company_name: values.company_name,
+            first_name: values.first_name,
+            last_name: values.last_name,
             email: values.email || null,
             phone: values.phone || null,
             mobile: values.mobile || null,
             fax: values.fax || null,
-            billing_street: values.billing_street || null,
+            website: values.website || null,
+            billing_address_line1: values.billing_address_line1 || null,
+            billing_address_line2: values.billing_address_line2 || null,
             billing_city: values.billing_city || null,
             billing_state: values.billing_state || null,
             billing_postal_code: values.billing_postal_code || null,
             billing_country: values.billing_country || null,
-            shipping_street: values.shipping_street || null,
+            shipping_address_line1: values.shipping_address_line1 || null,
+            shipping_address_line2: values.shipping_address_line2 || null,
             shipping_city: values.shipping_city || null,
             shipping_state: values.shipping_state || null,
             shipping_postal_code: values.shipping_postal_code || null,
             shipping_country: values.shipping_country || null,
-            customer_type: values.customer_type || null,
-            tax_exempt_reason: values.tax_exempt_reason || null,
-            resale_number: values.resale_number || null,
-            preferred_delivery_method: values.preferred_delivery_method || null,
-            currency: values.currency,
-            notes: values.notes || null,
+            tax_exempt: values.tax_exempt,
+            tax_id: values.tax_id || null,
+            currency_id: values.currency_id,
+            payment_terms: values.payment_terms || null,
+            credit_limit: values.credit_limit || null,
             is_active: values.is_active,
-            open_balance: values.open_balance || 0
+            notes: values.notes || null,
+            balance: values.balance || 0,
+            updated_by: user.id,
+            updated_at: new Date().toISOString()
           })
           .eq('id', customerId)
           .select();
@@ -208,32 +242,40 @@ const CustomerForm = ({ customerId }: CustomerFormProps) => {
         return data && data[0];
       } else {
         const { data, error } = await supabase
-          .from('customers')
+          .from('customer_profile')
           .insert({
+            organization_id: currentOrganization.id,
             display_name: values.display_name,
             company_name: values.company_name,
+            first_name: values.first_name,
+            last_name: values.last_name,
             email: values.email || null,
             phone: values.phone || null,
             mobile: values.mobile || null,
             fax: values.fax || null,
-            billing_street: values.billing_street || null,
+            website: values.website || null,
+            billing_address_line1: values.billing_address_line1 || null,
+            billing_address_line2: values.billing_address_line2 || null,
             billing_city: values.billing_city || null,
             billing_state: values.billing_state || null,
             billing_postal_code: values.billing_postal_code || null,
             billing_country: values.billing_country || null,
-            shipping_street: values.shipping_street || null,
+            shipping_address_line1: values.shipping_address_line1 || null,
+            shipping_address_line2: values.shipping_address_line2 || null,
             shipping_city: values.shipping_city || null,
             shipping_state: values.shipping_state || null,
             shipping_postal_code: values.shipping_postal_code || null,
             shipping_country: values.shipping_country || null,
-            customer_type: values.customer_type || null,
-            tax_exempt_reason: values.tax_exempt_reason || null,
-            resale_number: values.resale_number || null,
-            preferred_delivery_method: values.preferred_delivery_method || null,
-            currency: values.currency,
-            notes: values.notes || null,
+            tax_exempt: values.tax_exempt,
+            tax_id: values.tax_id || null,
+            currency_id: values.currency_id,
+            payment_terms: values.payment_terms || null,
+            credit_limit: values.credit_limit || null,
             is_active: values.is_active,
-            open_balance: values.open_balance || 0
+            notes: values.notes || null,
+            balance: values.balance || 0,
+            created_by: user.id,
+            updated_by: user.id
           })
           .select();
         
@@ -270,15 +312,6 @@ const CustomerForm = ({ customerId }: CustomerFormProps) => {
 
   const onSubmit = (values: CustomerFormValues) => {
     saveCustomerMutation.mutate(values);
-  };
-
-  const copyShippingToBilling = () => {
-    const shippingValues = form.getValues();
-    form.setValue('billing_street', shippingValues.shipping_street || '');
-    form.setValue('billing_city', shippingValues.shipping_city || '');
-    form.setValue('billing_state', shippingValues.shipping_state || '');
-    form.setValue('billing_postal_code', shippingValues.shipping_postal_code || '');
-    form.setValue('billing_country', shippingValues.shipping_country || '');
   };
 
   return (
@@ -326,6 +359,36 @@ const CustomerForm = ({ customerId }: CustomerFormProps) => {
                   )}
                 />
                 
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="first_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>First Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="First Name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="last_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Last Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Last Name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
                 <FormField
                   control={form.control}
                   name="email"
@@ -340,7 +403,21 @@ const CustomerForm = ({ customerId }: CustomerFormProps) => {
                   )}
                 />
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="website"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Website</FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://example.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <FormField
                     control={form.control}
                     name="phone"
@@ -392,12 +469,26 @@ const CustomerForm = ({ customerId }: CustomerFormProps) => {
               <div className="space-y-4">
                 <FormField
                   control={form.control}
-                  name="billing_street"
+                  name="billing_address_line1"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Street</FormLabel>
+                      <FormLabel>Address Line 1</FormLabel>
                       <FormControl>
                         <Input placeholder="123 Main St" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="billing_address_line2"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Address Line 2</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Suite 100" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -483,12 +574,26 @@ const CustomerForm = ({ customerId }: CustomerFormProps) => {
               <div className="space-y-4">
                 <FormField
                   control={form.control}
-                  name="shipping_street"
+                  name="shipping_address_line1"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Street</FormLabel>
+                      <FormLabel>Address Line 1</FormLabel>
                       <FormControl>
                         <Input placeholder="123 Main St" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="shipping_address_line2"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Address Line 2</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Suite 100" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -572,27 +677,13 @@ const CustomerForm = ({ customerId }: CustomerFormProps) => {
               <h3 className="text-lg font-medium mb-4">Additional Information</h3>
               
               <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="customer_type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Customer Type</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Business, Individual, etc." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
-                    name="tax_exempt_reason"
+                    name="tax_id"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Tax Exempt Reason</FormLabel>
+                        <FormLabel>Tax ID</FormLabel>
                         <FormControl>
                           <Input placeholder="If applicable" {...field} />
                         </FormControl>
@@ -603,12 +694,12 @@ const CustomerForm = ({ customerId }: CustomerFormProps) => {
                   
                   <FormField
                     control={form.control}
-                    name="resale_number"
+                    name="payment_terms"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Resale Number</FormLabel>
+                        <FormLabel>Payment Terms</FormLabel>
                         <FormControl>
-                          <Input placeholder="If applicable" {...field} />
+                          <Input placeholder="Net 30, etc." {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -619,34 +710,7 @@ const CustomerForm = ({ customerId }: CustomerFormProps) => {
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
-                    name="preferred_delivery_method"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Preferred Delivery</FormLabel>
-                        <Select 
-                          onValueChange={field.onChange} 
-                          defaultValue={field.value}
-                          value={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select method" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Email">Email</SelectItem>
-                            <SelectItem value="Print">Print</SelectItem>
-                            <SelectItem value="None">None</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="currency"
+                    name="currency_id"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Currency</FormLabel>
@@ -671,6 +735,25 @@ const CustomerForm = ({ customerId }: CustomerFormProps) => {
                       </FormItem>
                     )}
                   />
+                  
+                  <FormField
+                    control={form.control}
+                    name="credit_limit"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Credit Limit</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            step="0.01" 
+                            {...field} 
+                            onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
                 
                 <FormField
@@ -687,6 +770,27 @@ const CustomerForm = ({ customerId }: CustomerFormProps) => {
                         />
                       </FormControl>
                       <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="tax_exempt"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                      <div className="space-y-0.5">
+                        <FormLabel>Tax Exempt</FormLabel>
+                        <FormDescription>
+                          Check if this customer is exempt from taxes
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
                     </FormItem>
                   )}
                 />

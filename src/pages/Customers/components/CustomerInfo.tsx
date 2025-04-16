@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import StatusBadge from '@/components/ui/data-display/StatusBadge';
 import { 
-  Mail, Phone, Building2, Tag, MapPin, Smartphone, MapPinned, 
+  Mail, Phone, Building2, Tag, MapPin, Smartphone, MapPinned, Globe
 } from 'lucide-react';
 import { formatCurrency, formatPhoneNumber } from '@/lib/formatters';
 
@@ -21,10 +21,20 @@ const CustomerInfo: React.FC<CustomerInfoProps> = ({ customer }) => {
         </div>
         
         <div className="space-y-5">
-          {customer.open_balance !== null && (
+          {customer.balance !== null && (
             <div className="bg-muted/30 p-4 rounded-lg mb-4">
-              <div className="text-sm text-muted-foreground mb-1">Open Balance</div>
-              <div className="text-2xl font-semibold">{formatCurrency(customer.open_balance || 0)}</div>
+              <div className="text-sm text-muted-foreground mb-1">Account Balance</div>
+              <div className="text-2xl font-semibold">{formatCurrency(customer.balance || 0)}</div>
+            </div>
+          )}
+          
+          {(customer.first_name || customer.last_name) && (
+            <div className="flex items-start">
+              <Building2 className="mr-3 h-4 w-4 mt-1 text-muted-foreground" />
+              <div>
+                <div className="text-sm text-muted-foreground">Contact Name</div>
+                <div>{`${customer.first_name || ''} ${customer.last_name || ''}`.trim()}</div>
+              </div>
             </div>
           )}
           
@@ -58,12 +68,23 @@ const CustomerInfo: React.FC<CustomerInfoProps> = ({ customer }) => {
             </div>
           )}
           
-          {(customer.billing_street || customer.billing_city || customer.billing_state) && (
+          {customer.website && (
+            <div className="flex items-start">
+              <Globe className="mr-3 h-4 w-4 mt-1 text-muted-foreground" />
+              <div>
+                <div className="text-sm text-muted-foreground">Website</div>
+                <div>{customer.website}</div>
+              </div>
+            </div>
+          )}
+          
+          {(customer.billing_address_line1 || customer.billing_city || customer.billing_state) && (
             <div className="flex items-start">
               <MapPin className="mr-3 h-4 w-4 mt-1 text-muted-foreground" />
               <div>
                 <div className="text-sm text-muted-foreground">Billing Address</div>
-                {customer.billing_street && <div>{customer.billing_street}</div>}
+                {customer.billing_address_line1 && <div>{customer.billing_address_line1}</div>}
+                {customer.billing_address_line2 && <div>{customer.billing_address_line2}</div>}
                 {(customer.billing_city || customer.billing_state || customer.billing_postal_code) && (
                   <div>
                     {customer.billing_city && `${customer.billing_city}, `}
@@ -76,12 +97,13 @@ const CustomerInfo: React.FC<CustomerInfoProps> = ({ customer }) => {
             </div>
           )}
           
-          {(customer.shipping_street || customer.shipping_city || customer.shipping_state) && (
+          {(customer.shipping_address_line1 || customer.shipping_city || customer.shipping_state) && (
             <div className="flex items-start">
               <MapPinned className="mr-3 h-4 w-4 mt-1 text-muted-foreground" />
               <div>
                 <div className="text-sm text-muted-foreground">Shipping Address</div>
-                {customer.shipping_street && <div>{customer.shipping_street}</div>}
+                {customer.shipping_address_line1 && <div>{customer.shipping_address_line1}</div>}
+                {customer.shipping_address_line2 && <div>{customer.shipping_address_line2}</div>}
                 {(customer.shipping_city || customer.shipping_state || customer.shipping_postal_code) && (
                   <div>
                     {customer.shipping_city && `${customer.shipping_city}, `}
@@ -94,12 +116,12 @@ const CustomerInfo: React.FC<CustomerInfoProps> = ({ customer }) => {
             </div>
           )}
           
-          {customer.currency && (
+          {customer.currency_id && (
             <div className="flex items-start">
               <Tag className="mr-3 h-4 w-4 mt-1 text-muted-foreground" />
               <div>
                 <div className="text-sm text-muted-foreground">Currency</div>
-                <div>{customer.currency}</div>
+                <div>{customer.currency_id}</div>
               </div>
             </div>
           )}

@@ -12,7 +12,7 @@ interface Customer {
   company_name: string | null;
   email: string | null;
   phone: string | null;
-  open_balance: number | null;
+  balance: number | null;
   is_active: boolean | null;
 }
 
@@ -33,7 +33,7 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ customers, isLoading })
             <TableHead>Company Name</TableHead>
             <TableHead>Email Address</TableHead>
             <TableHead>Phone Number</TableHead>
-            <TableHead className="text-right">Open Balance</TableHead>
+            <TableHead className="text-right">Balance</TableHead>
             <TableHead>Status</TableHead>
           </TableRow>
         </TableHeader>
@@ -60,7 +60,7 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ customers, isLoading })
             <TableHead>Company Name</TableHead>
             <TableHead>Email Address</TableHead>
             <TableHead>Phone Number</TableHead>
-            <TableHead className="text-right">Open Balance</TableHead>
+            <TableHead className="text-right">Balance</TableHead>
             <TableHead>Status</TableHead>
           </TableRow>
         </TableHeader>
@@ -86,7 +86,7 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ customers, isLoading })
           <TableHead>Company Name</TableHead>
           <TableHead>Email Address</TableHead>
           <TableHead>Phone Number</TableHead>
-          <TableHead className="text-right">Open Balance</TableHead>
+          <TableHead className="text-right">Balance</TableHead>
           <TableHead>Status</TableHead>
         </TableRow>
       </TableHeader>
@@ -101,7 +101,7 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ customers, isLoading })
             <TableCell>{customer.company_name || '-'}</TableCell>
             <TableCell>{customer.email || '-'}</TableCell>
             <TableCell>{customer.phone ? formatPhoneNumber(customer.phone) : '-'}</TableCell>
-            <TableCell className="text-right">{formatCurrency(customer.open_balance || 0)}</TableCell>
+            <TableCell className="text-right">{formatCurrency(customer.balance || 0)}</TableCell>
             <TableCell>
               <StatusBadge status={customer.is_active ? 'active' : 'inactive'} />
             </TableCell>

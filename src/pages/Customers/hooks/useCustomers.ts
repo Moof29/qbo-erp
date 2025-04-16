@@ -3,6 +3,7 @@ import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthContext';
 
 interface Customer {
   id: string;
@@ -10,26 +11,28 @@ interface Customer {
   company_name: string | null;
   email: string | null;
   phone: string | null;
-  open_balance: number | null;
+  balance: number | null;
   is_active: boolean | null;
 }
 
-type SortField = 'display_name' | 'open_balance';
+type SortField = 'display_name' | 'balance';
 type SortOrder = 'asc' | 'desc';
 
 export const useCustomers = () => {
   const { toast } = useToast();
+  const { currentOrganization } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [sortField, setSortField] = useState<SortField>('display_name');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
   const { data: customers = [], isLoading, error, refetch } = useQuery({
-    queryKey: ['customers'],
+    queryKey: ['customers', currentOrganization?.id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('customers')
-        .select('id, display_name, company_name, email, phone, open_balance, is_active');
+        .from('customer_profile')
+        .select('id, display_name, company_name, email, phone, balance, is_active')
+        .eq('organization_id', currentOrganization?.id || '');
 
       if (error) {
         toast({
@@ -42,6 +45,7 @@ export const useCustomers = () => {
       
       return data || [];
     },
+    enabled: !!currentOrganization?.id,
   });
 
   // Handle sorting
@@ -78,9 +82,9 @@ export const useCustomers = () => {
           return sortOrder === 'asc' 
             ? nameA.localeCompare(nameB)
             : nameB.localeCompare(nameA);
-        } else if (sortField === 'open_balance') {
-          const balanceA = a.open_balance || 0;
-          const balanceB = b.open_balance || 0;
+        } else if (sortField === 'balance') {
+          const balanceA = a.balance || 0;
+          const balanceB = b.balance || 0;
           return sortOrder === 'asc' 
             ? balanceA - balanceB 
             : balanceB - balanceA;

@@ -21,20 +21,32 @@ const DetailsTab: React.FC<CustomerDetailsTabProps> = ({ customer }) => {
               <dd className="col-span-2">{customer.company_name || '-'}</dd>
             </div>
             <div className="grid grid-cols-3 gap-1">
-              <dt className="col-span-1 text-sm text-muted-foreground">Customer Type</dt>
-              <dd className="col-span-2">{customer.customer_type || '-'}</dd>
+              <dt className="col-span-1 text-sm text-muted-foreground">First Name</dt>
+              <dd className="col-span-2">{customer.first_name || '-'}</dd>
+            </div>
+            <div className="grid grid-cols-3 gap-1">
+              <dt className="col-span-1 text-sm text-muted-foreground">Last Name</dt>
+              <dd className="col-span-2">{customer.last_name || '-'}</dd>
+            </div>
+            <div className="grid grid-cols-3 gap-1">
+              <dt className="col-span-1 text-sm text-muted-foreground">Website</dt>
+              <dd className="col-span-2">{customer.website || '-'}</dd>
             </div>
             <div className="grid grid-cols-3 gap-1">
               <dt className="col-span-1 text-sm text-muted-foreground">Tax Exempt</dt>
-              <dd className="col-span-2">{customer.tax_exempt_reason || 'No'}</dd>
+              <dd className="col-span-2">{customer.tax_exempt ? 'Yes' : 'No'}</dd>
             </div>
             <div className="grid grid-cols-3 gap-1">
-              <dt className="col-span-1 text-sm text-muted-foreground">Resale Number</dt>
-              <dd className="col-span-2">{customer.resale_number || '-'}</dd>
+              <dt className="col-span-1 text-sm text-muted-foreground">Tax ID</dt>
+              <dd className="col-span-2">{customer.tax_id || '-'}</dd>
             </div>
             <div className="grid grid-cols-3 gap-1">
-              <dt className="col-span-1 text-sm text-muted-foreground">Preferred Delivery</dt>
-              <dd className="col-span-2">{customer.preferred_delivery_method || '-'}</dd>
+              <dt className="col-span-1 text-sm text-muted-foreground">Payment Terms</dt>
+              <dd className="col-span-2">{customer.payment_terms || '-'}</dd>
+            </div>
+            <div className="grid grid-cols-3 gap-1">
+              <dt className="col-span-1 text-sm text-muted-foreground">Credit Limit</dt>
+              <dd className="col-span-2">{customer.credit_limit || '-'}</dd>
             </div>
           </dl>
         </div>
@@ -45,6 +57,18 @@ const DetailsTab: React.FC<CustomerDetailsTabProps> = ({ customer }) => {
             <div>
               <dt className="text-sm text-muted-foreground">Notes</dt>
               <dd className="mt-1 border rounded p-2 min-h-[100px] bg-muted/30">{customer.notes || 'No additional notes'}</dd>
+            </div>
+            <div>
+              <dt className="text-sm text-muted-foreground">QBO ID</dt>
+              <dd>{customer.qbo_id || '-'}</dd>
+            </div>
+            <div>
+              <dt className="text-sm text-muted-foreground">Last Sync</dt>
+              <dd>{customer.last_sync_at ? new Date(customer.last_sync_at).toLocaleString() : 'Never'}</dd>
+            </div>
+            <div>
+              <dt className="text-sm text-muted-foreground">Sync Status</dt>
+              <dd>{customer.sync_status || '-'}</dd>
             </div>
           </dl>
         </div>
