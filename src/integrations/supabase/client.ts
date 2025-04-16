@@ -5,14 +5,6 @@ import type { Database } from './types';
 const SUPABASE_URL = "https://jobmdcimyvekynnysola.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvYm1kY2lteXZla3lubnlzb2xhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ1ODM5NTcsImV4cCI6MjA2MDE1OTk1N30.kinoqr7nuNC8rVBEGfCe4CJzKPiwgC-hsWmv6gXz9rc";
 
-// Create Supabase client
-export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true
-  }
-});
-
 // Define interfaces for organization and user data
 export interface Organization {
   id: string;
@@ -62,6 +54,14 @@ interface UserOrgJoinResult {
   role: string;
   organizations: Organization;
 }
+
+// Create Supabase client
+export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true
+  }
+});
 
 // Helper functions for organizations
 export const fetchUserOrganizations = async (userId: string): Promise<UserOrgJoinResult[]> => {
