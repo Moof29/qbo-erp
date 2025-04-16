@@ -97,8 +97,8 @@ export const fetchUserOrganizations = async (userId: string): Promise<UserOrgJoi
   return data as unknown as UserOrgJoinResult[];
 };
 
-export const createOrganization = async (organizationData: Omit<Partial<Organization>, 'display_name'>): Promise<Organization> => {
-  // We need to cast the result since the type system doesn't know about our custom tables
+// Updated to ensure name is required when creating an organization
+export const createOrganization = async (organizationData: { name: string } & Partial<Omit<Organization, 'id' | 'created_at' | 'updated_at' | 'is_active'>>): Promise<Organization> => {
   const { data, error } = await supabase
     .from('organizations')
     .insert(organizationData)
@@ -106,7 +106,7 @@ export const createOrganization = async (organizationData: Omit<Partial<Organiza
     .single();
     
   if (error) throw error;
-  return data as unknown as Organization;
+  return data as Organization;
 };
 
 export const linkUserToOrganization = async (
@@ -114,7 +114,6 @@ export const linkUserToOrganization = async (
   organizationId: string, 
   role: string = 'admin'
 ): Promise<UserOrganization> => {
-  // We need to cast the result since the type system doesn't know about our custom tables
   const { data, error } = await supabase
     .from('user_organizations')
     .insert({
@@ -127,5 +126,5 @@ export const linkUserToOrganization = async (
     .single();
     
   if (error) throw error;
-  return data as unknown as UserOrganization;
+  return data as UserOrganization;
 };
