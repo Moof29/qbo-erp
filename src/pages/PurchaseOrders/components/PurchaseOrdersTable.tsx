@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileText } from 'lucide-react';
@@ -37,13 +36,13 @@ const PurchaseOrdersTable: React.FC<PurchaseOrdersTableProps> = ({ purchaseOrder
     );
   }
 
-  const getStatusType = (status?: string): 'draft' | 'pending' | 'approved' | 'received' | 'default' => {
+  const getValidStatus = (status?: string): 'draft' | 'pending' | 'approved' | 'received' | 'default' => {
     switch (status) {
       case 'draft': return 'draft';
       case 'pending': return 'pending';
       case 'approved': return 'approved';
       case 'received': return 'received';
-      default: return 'default';
+      default: return 'draft';
     }
   };
 
@@ -72,7 +71,7 @@ const PurchaseOrdersTable: React.FC<PurchaseOrdersTableProps> = ({ purchaseOrder
             <TableCell>{po.expected_date ? formatDate(new Date(po.expected_date)) : "—"}</TableCell>
             <TableCell>{po.total ? formatCurrency(po.total) : "—"}</TableCell>
             <TableCell>
-              <StatusBadge status={po.status || 'draft'} />
+              <StatusBadge status={getValidStatus(po.status)} />
             </TableCell>
           </TableRow>
         ))}

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -37,6 +36,16 @@ const PurchaseOrderDetailPage = () => {
     );
   }
 
+  const getValidStatus = (status?: string): 'draft' | 'pending' | 'approved' | 'received' | 'default' => {
+    switch (status) {
+      case 'draft': return 'draft';
+      case 'pending': return 'pending';
+      case 'approved': return 'approved';
+      case 'received': return 'received';
+      default: return 'draft';
+    }
+  };
+
   return (
     <>
       <PageHeader 
@@ -55,7 +64,7 @@ const PurchaseOrderDetailPage = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Purchase Order Info</h3>
-              <StatusBadge status={purchaseOrder.status || 'draft'} />
+              <StatusBadge status={getValidStatus(purchaseOrder.status)} />
             </div>
             
             <div className="space-y-4">
