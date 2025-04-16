@@ -45,8 +45,9 @@ const InvoicesPage = () => {
         toast({
           variant: "destructive",
           title: "Failed to add sample data",
-          // TypeScript now knows result is SeedErrorResult when success is false
-          description: result.error || "Unknown error occurred",
+          description: "success" in result && !result.success && "error" in result 
+            ? result.error 
+            : "Unknown error occurred",
         });
       }
       refetch(); // Always refetch to ensure UI is updated
