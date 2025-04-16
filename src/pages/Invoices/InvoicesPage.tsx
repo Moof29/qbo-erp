@@ -45,6 +45,7 @@ const InvoicesPage = () => {
         toast({
           variant: "destructive",
           title: "Failed to add sample data",
+          // TypeScript now knows result is SeedErrorResult when success is false
           description: result.error || "Unknown error occurred",
         });
       }

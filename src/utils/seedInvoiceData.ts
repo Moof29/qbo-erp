@@ -190,6 +190,7 @@ export const seedIfEmptyInvoices = async (): Promise<SeedResult> => {
         toast({
           variant: "destructive",
           title: "Failed to create dummy invoices",
+          // TypeScript now knows result is SeedErrorResult when success is false
           description: result.error || "Unknown error",
         });
         return result;
