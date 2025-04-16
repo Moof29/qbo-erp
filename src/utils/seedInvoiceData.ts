@@ -1,6 +1,22 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from "@/hooks/use-toast"; // Import toast directly instead of useToast
+
+// Define return types for consistency
+interface SeedSuccessResult {
+  success: true;
+  count: number;
+  data?: any[];
+  message?: string;
+}
+
+interface SeedErrorResult {
+  success: false;
+  error: string;
+}
+
+type SeedResult = SeedSuccessResult | SeedErrorResult;
 
 const dummyInvoices = [
   {
@@ -60,7 +76,7 @@ const dummyInvoices = [
   },
 ];
 
-export const seedDummyInvoices = async () => {
+export const seedDummyInvoices = async (): Promise<SeedResult> => {
   try {
     // Get current user and organization
     const { data: { user } } = await supabase.auth.getUser();
@@ -143,7 +159,7 @@ export const seedDummyInvoices = async () => {
   }
 };
 
-export const checkInvoicesExist = async () => {
+export const checkInvoicesExist = async (): Promise<boolean> => {
   try {
     // Simple count query to check if any invoices exist
     const { count, error } = await supabase
@@ -159,7 +175,7 @@ export const checkInvoicesExist = async () => {
   }
 };
 
-export const seedIfEmptyInvoices = async () => {
+export const seedIfEmptyInvoices = async (): Promise<SeedResult> => {
   try {
     const hasInvoices = await checkInvoicesExist();
     if (!hasInvoices) {
@@ -179,7 +195,11 @@ export const seedIfEmptyInvoices = async () => {
         return result;
       }
     }
-    return { success: true, count: 0, message: "Invoices already exist" };
+    return { 
+      success: true, 
+      count: 0, 
+      message: "Invoices already exist" 
+    };
   } catch (error: any) {
     console.error("Error in seedIfEmptyInvoices:", error);
     return { success: false, error: String(error) };

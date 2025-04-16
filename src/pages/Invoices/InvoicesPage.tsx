@@ -39,13 +39,13 @@ const InvoicesPage = () => {
           title: "Invoice data added",
           description: result.count > 0 
             ? `${result.count} sample invoices have been added` 
-            : "No new invoices were needed",
+            : result.message || "No new invoices were needed",
         });
       } else {
         toast({
           variant: "destructive",
           title: "Failed to add sample data",
-          description: result.message || "Unknown error occurred", // Changed from result.error to result.message
+          description: result.error || "Unknown error occurred",
         });
       }
       refetch(); // Always refetch to ensure UI is updated
