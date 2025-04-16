@@ -18,6 +18,7 @@ import NewInvoiceForm from "@/pages/Invoices/NewInvoiceForm";
 import PaymentsPage from "@/pages/Payments/PaymentsPage";
 import VendorsPage from "@/pages/Vendors/VendorsPage";
 import VendorDetailPage from "@/pages/Vendors/VendorDetailPage";
+import NewVendorForm from "@/pages/Vendors/NewVendorForm";
 import BillsPage from "@/pages/Bills/BillsPage";
 import SettingsPage from "@/pages/Settings/SettingsPage";
 import NotFound from "@/pages/NotFound";
@@ -48,6 +49,7 @@ const App = () => (
               <Route path="invoices/new" element={<NewInvoiceForm />} />
               <Route path="payments" element={<PaymentsPage />} />
               <Route path="vendors" element={<VendorsPage />} />
+              <Route path="vendors/new" element={<NewVendorForm />} />
               <Route path="vendors/:id" element={<VendorDetailPage />} />
               <Route path="bills" element={<BillsPage />} />
               <Route path="settings" element={

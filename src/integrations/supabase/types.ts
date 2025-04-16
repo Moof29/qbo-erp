@@ -350,6 +350,133 @@ export type Database = {
         }
         Relationships: []
       }
+      vendor_profile: {
+        Row: {
+          account_number: string | null
+          billing_address_line1: string | null
+          billing_address_line2: string | null
+          billing_city: string | null
+          billing_country: string | null
+          billing_postal_code: string | null
+          billing_state: string | null
+          company_name: string | null
+          created_at: string | null
+          created_by: string | null
+          currency_id: string | null
+          custom_fields: Json | null
+          display_name: string
+          email: string | null
+          fax: string | null
+          first_name: string | null
+          id: string
+          is_1099: boolean | null
+          is_active: boolean | null
+          last_name: string | null
+          last_sync_at: string | null
+          mobile: string | null
+          notes: string | null
+          organization_id: string | null
+          payment_terms: string | null
+          phone: string | null
+          qbo_id: string | null
+          sync_status: string | null
+          tax_id: string | null
+          updated_at: string | null
+          updated_by: string | null
+          website: string | null
+        }
+        Insert: {
+          account_number?: string | null
+          billing_address_line1?: string | null
+          billing_address_line2?: string | null
+          billing_city?: string | null
+          billing_country?: string | null
+          billing_postal_code?: string | null
+          billing_state?: string | null
+          company_name?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          currency_id?: string | null
+          custom_fields?: Json | null
+          display_name: string
+          email?: string | null
+          fax?: string | null
+          first_name?: string | null
+          id?: string
+          is_1099?: boolean | null
+          is_active?: boolean | null
+          last_name?: string | null
+          last_sync_at?: string | null
+          mobile?: string | null
+          notes?: string | null
+          organization_id?: string | null
+          payment_terms?: string | null
+          phone?: string | null
+          qbo_id?: string | null
+          sync_status?: string | null
+          tax_id?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+          website?: string | null
+        }
+        Update: {
+          account_number?: string | null
+          billing_address_line1?: string | null
+          billing_address_line2?: string | null
+          billing_city?: string | null
+          billing_country?: string | null
+          billing_postal_code?: string | null
+          billing_state?: string | null
+          company_name?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          currency_id?: string | null
+          custom_fields?: Json | null
+          display_name?: string
+          email?: string | null
+          fax?: string | null
+          first_name?: string | null
+          id?: string
+          is_1099?: boolean | null
+          is_active?: boolean | null
+          last_name?: string | null
+          last_sync_at?: string | null
+          mobile?: string | null
+          notes?: string | null
+          organization_id?: string | null
+          payment_terms?: string | null
+          phone?: string | null
+          qbo_id?: string | null
+          sync_status?: string | null
+          tax_id?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_profile_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_profile_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_profile_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

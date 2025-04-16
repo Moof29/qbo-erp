@@ -7,49 +7,29 @@ import PageHeader from '@/components/ui/elements/PageHeader';
 import StatusBadge from '@/components/ui/data-display/StatusBadge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Mail, Phone, Calendar, Building, FileText, Receipt } from 'lucide-react';
+import { Mail, Phone, Calendar, Building, FileText, Receipt, GlobeIcon, User, CircleDollarSign } from 'lucide-react';
 import { formatCurrency, formatPhoneNumber } from '@/lib/formatters';
-
-// Mock data
-const vendors = [
-  { 
-    id: '1', 
-    name: 'Office Depot', 
-    email: 'accounts@officedepot.com', 
-    phone: '1234567890', 
-    status: 'active',
-    terms: 'Net 30',
-    address: {
-      street: '123 Supply St',
-      city: 'Commerce City',
-      state: 'CA',
-      zip: '90210',
-    },
-    bills: [
-      { id: 'BILL-2023-001', date: '2023-05-01', dueDate: '2023-05-31', amount: 850.75, status: 'paid' },
-      { id: 'BILL-2023-005', date: '2023-05-15', dueDate: '2023-06-15', amount: 1200.25, status: 'unpaid' },
-    ],
-    payments: [
-      { id: 'PAY-2023-002', date: '2023-05-14', method: 'Bank Transfer', amount: 850.75 },
-    ],
-    files: [
-      { id: 1, name: 'vendor_agreement.pdf', date: '2023-04-15', size: '1.2 MB' },
-      { id: 2, name: 'w9_form.pdf', date: '2023-04-15', size: '345 KB' },
-    ]
-  },
-];
+import { useVendorDetail } from './hooks/useVendorDetail';
 
 const VendorDetailPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const vendor = vendors.find(v => v.id === id);
+  const { vendor, isLoading, error, bills, payments, files } = useVendorDetail(id || '');
 
-  if (!vendor) {
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (error || !vendor) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
           <h2 className="text-xl font-semibold">Vendor not found</h2>
-          <p className="text-muted-foreground">The vendor you're looking for doesn't exist</p>
+          <p className="text-muted-foreground">{error || "The vendor you're looking for doesn't exist"}</p>
           <Button onClick={() => navigate('/vendors')} className="mt-4">
             Back to Vendors
           </Button>
@@ -61,7 +41,7 @@ const VendorDetailPage = () => {
   return (
     <>
       <PageHeader 
-        title={vendor.name}
+        title={vendor.display_name}
         actions={
           <Button onClick={() => navigate(`/bills/new?vendor=${id}`)}>
             <Receipt className="mr-2 h-4 w-4" />
@@ -75,42 +55,97 @@ const VendorDetailPage = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Vendor Information</h3>
-              <StatusBadge status={vendor.status as 'active' | 'inactive'} />
+              <StatusBadge status={vendor.is_active ? 'active' : 'inactive'} />
             </div>
             
             <div className="space-y-4">
-              <div className="flex items-start">
-                <Mail className="mr-2 h-4 w-4 mt-1 text-muted-foreground" />
-                <div>
-                  <div className="text-sm text-muted-foreground">Email Address</div>
-                  <div>{vendor.email}</div>
+              {(vendor.first_name || vendor.last_name) && (
+                <div className="flex items-start">
+                  <User className="mr-2 h-4 w-4 mt-1 text-muted-foreground" />
+                  <div>
+                    <div className="text-sm text-muted-foreground">Contact Person</div>
+                    <div>{[vendor.first_name, vendor.last_name].filter(Boolean).join(' ')}</div>
+                  </div>
                 </div>
-              </div>
+              )}
               
-              <div className="flex items-start">
-                <Phone className="mr-2 h-4 w-4 mt-1 text-muted-foreground" />
-                <div>
-                  <div className="text-sm text-muted-foreground">Phone Number</div>
-                  <div>{formatPhoneNumber(vendor.phone)}</div>
+              {vendor.email && (
+                <div className="flex items-start">
+                  <Mail className="mr-2 h-4 w-4 mt-1 text-muted-foreground" />
+                  <div>
+                    <div className="text-sm text-muted-foreground">Email Address</div>
+                    <div>{vendor.email}</div>
+                  </div>
                 </div>
-              </div>
+              )}
               
-              <div className="flex items-start">
-                <Building className="mr-2 h-4 w-4 mt-1 text-muted-foreground" />
-                <div>
-                  <div className="text-sm text-muted-foreground">Address</div>
-                  <div>{vendor.address.street}</div>
-                  <div>{vendor.address.city}, {vendor.address.state} {vendor.address.zip}</div>
+              {vendor.phone && (
+                <div className="flex items-start">
+                  <Phone className="mr-2 h-4 w-4 mt-1 text-muted-foreground" />
+                  <div>
+                    <div className="text-sm text-muted-foreground">Phone Number</div>
+                    <div>{formatPhoneNumber(vendor.phone)}</div>
+                  </div>
                 </div>
-              </div>
+              )}
               
-              <div className="flex items-start">
-                <Calendar className="mr-2 h-4 w-4 mt-1 text-muted-foreground" />
-                <div>
-                  <div className="text-sm text-muted-foreground">Payment Terms</div>
-                  <div>{vendor.terms}</div>
+              {(vendor.billing_address_line1 || vendor.billing_city || vendor.billing_state || vendor.billing_postal_code) && (
+                <div className="flex items-start">
+                  <Building className="mr-2 h-4 w-4 mt-1 text-muted-foreground" />
+                  <div>
+                    <div className="text-sm text-muted-foreground">Address</div>
+                    {vendor.billing_address_line1 && <div>{vendor.billing_address_line1}</div>}
+                    {vendor.billing_address_line2 && <div>{vendor.billing_address_line2}</div>}
+                    {(vendor.billing_city || vendor.billing_state || vendor.billing_postal_code) && (
+                      <div>
+                        {[
+                          vendor.billing_city,
+                          vendor.billing_state,
+                          vendor.billing_postal_code
+                        ].filter(Boolean).join(', ')}
+                      </div>
+                    )}
+                    {vendor.billing_country && <div>{vendor.billing_country}</div>}
+                  </div>
                 </div>
-              </div>
+              )}
+              
+              {vendor.website && (
+                <div className="flex items-start">
+                  <GlobeIcon className="mr-2 h-4 w-4 mt-1 text-muted-foreground" />
+                  <div>
+                    <div className="text-sm text-muted-foreground">Website</div>
+                    <div>{vendor.website}</div>
+                  </div>
+                </div>
+              )}
+              
+              {vendor.payment_terms && (
+                <div className="flex items-start">
+                  <Calendar className="mr-2 h-4 w-4 mt-1 text-muted-foreground" />
+                  <div>
+                    <div className="text-sm text-muted-foreground">Payment Terms</div>
+                    <div>{vendor.payment_terms}</div>
+                  </div>
+                </div>
+              )}
+              
+              {vendor.tax_id && (
+                <div className="flex items-start">
+                  <CircleDollarSign className="mr-2 h-4 w-4 mt-1 text-muted-foreground" />
+                  <div>
+                    <div className="text-sm text-muted-foreground">Tax ID</div>
+                    <div>{vendor.tax_id}</div>
+                  </div>
+                </div>
+              )}
+              
+              {vendor.notes && (
+                <div className="mt-4 pt-4 border-t">
+                  <div className="text-sm text-muted-foreground mb-1">Notes</div>
+                  <div className="text-sm">{vendor.notes}</div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -136,7 +171,7 @@ const VendorDetailPage = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {vendor.bills.map(bill => (
+                    {bills.length > 0 ? bills.map(bill => (
                       <TableRow 
                         key={bill.id}
                         className="cursor-pointer hover:bg-muted/50"
@@ -147,10 +182,16 @@ const VendorDetailPage = () => {
                         <TableCell>{bill.dueDate}</TableCell>
                         <TableCell>{formatCurrency(bill.amount)}</TableCell>
                         <TableCell>
-                          <StatusBadge status={bill.status as any} />
+                          <StatusBadge status={bill.status} />
                         </TableCell>
                       </TableRow>
-                    ))}
+                    )) : (
+                      <TableRow>
+                        <TableCell colSpan={5} className="h-24 text-center">
+                          No bills found
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </TabsContent>
@@ -166,7 +207,7 @@ const VendorDetailPage = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {vendor.payments.map(payment => (
+                    {payments.length > 0 ? payments.map(payment => (
                       <TableRow 
                         key={payment.id}
                         className="cursor-pointer hover:bg-muted/50"
@@ -177,14 +218,20 @@ const VendorDetailPage = () => {
                         <TableCell>{payment.method}</TableCell>
                         <TableCell>{formatCurrency(payment.amount)}</TableCell>
                       </TableRow>
-                    ))}
+                    )) : (
+                      <TableRow>
+                        <TableCell colSpan={4} className="h-24 text-center">
+                          No payments found
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </TabsContent>
               
               <TabsContent value="files" className="p-4">
                 <div className="space-y-4">
-                  {vendor.files.map(file => (
+                  {files.length > 0 ? files.map(file => (
                     <div key={file.id} className="flex items-center justify-between p-3 border rounded-md">
                       <div className="flex items-center">
                         <FileText className="h-5 w-5 mr-2 text-muted-foreground" />
@@ -195,7 +242,11 @@ const VendorDetailPage = () => {
                       </div>
                       <Button variant="ghost" size="sm">Download</Button>
                     </div>
-                  ))}
+                  )) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No files available
+                    </div>
+                  )}
                   
                   <div className="flex justify-center p-6 border border-dashed rounded-md">
                     <div className="text-center">
