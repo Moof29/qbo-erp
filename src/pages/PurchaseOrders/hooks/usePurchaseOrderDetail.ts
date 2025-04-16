@@ -16,6 +16,7 @@ export interface PurchaseOrderDetail {
   currency_id?: string;
   exchange_rate?: number;
   sync_status?: string;
+  last_sync_at?: string | null;
 }
 
 export interface LineItem {
@@ -73,7 +74,8 @@ export const usePurchaseOrderDetail = (purchaseOrderId: string) => {
             status: data.status,
             currency_id: data.currency_id,
             exchange_rate: data.exchange_rate,
-            sync_status: data.sync_status
+            sync_status: data.sync_status,
+            last_sync_at: data.last_sync_at
           };
           
           setPurchaseOrder(formattedPO);
