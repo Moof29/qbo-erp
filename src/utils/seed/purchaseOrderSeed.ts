@@ -114,7 +114,7 @@ export const seedDummyPurchaseOrders = async (): Promise<SeedResult> => {
     return { 
       success: true, 
       count: insertedPOs.length, 
-      itemCount: lineItems.length,
+      message: `Created ${insertedPOs.length} purchase orders with ${lineItems.length} line items`,
       data: insertedPOs 
     };
   } catch (error: any) {
