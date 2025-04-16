@@ -15,7 +15,8 @@ interface Customer {
   is_active: boolean | null;
 }
 
-type SortField = 'display_name' | 'balance';
+// Make sure this matches the CustomerFilters component
+export type SortField = 'display_name' | 'balance';
 type SortOrder = 'asc' | 'desc';
 
 export const useCustomers = () => {

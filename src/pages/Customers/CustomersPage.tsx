@@ -7,7 +7,7 @@ import PageHeader from '@/components/ui/elements/PageHeader';
 import { seedIfEmpty } from '@/utils/seedDummyData';
 import CustomerFilters from './components/CustomerFilters';
 import CustomersTable from './components/CustomersTable';
-import { useCustomers } from './hooks/useCustomers';
+import { useCustomers, type SortField } from './hooks/useCustomers';
 
 const CustomersPage = () => {
   const navigate = useNavigate();

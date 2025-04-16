@@ -10,8 +10,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { type SortField } from '../hooks/useCustomers';
 
-type SortField = 'display_name' | 'open_balance';
 type SortOrder = 'asc' | 'desc';
 
 interface CustomerFiltersProps {
@@ -68,8 +68,8 @@ const CustomerFilters: React.FC<CustomerFiltersProps> = ({
           <DropdownMenuItem onClick={() => onSortToggle('display_name')}>
             Sort by Name {sortField === 'display_name' && (sortOrder === 'asc' ? '(A-Z)' : '(Z-A)')}
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onSortToggle('open_balance')}>
-            Sort by Balance {sortField === 'open_balance' && (sortOrder === 'asc' ? '(Low-High)' : '(High-Low)')}
+          <DropdownMenuItem onClick={() => onSortToggle('balance')}>
+            Sort by Balance {sortField === 'balance' && (sortOrder === 'asc' ? '(Low-High)' : '(High-Low)')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
