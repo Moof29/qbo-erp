@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { 
   supabase, 
@@ -283,8 +282,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!user) return null;
     
     try {
-      const orgData: Partial<Organization> = { 
-        name, 
+      const orgData = { 
+        name,
         industry: industry || null,
       };
       
