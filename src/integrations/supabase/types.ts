@@ -157,6 +157,101 @@ export type Database = {
           },
         ]
       }
+      invoices: {
+        Row: {
+          balance: number | null
+          created_at: string | null
+          created_by: string | null
+          custom_fields: Json | null
+          customer_id: string | null
+          due_date: string | null
+          id: string
+          invoice_date: string | null
+          invoice_number: string
+          last_sync_at: string | null
+          memo: string | null
+          organization_id: string | null
+          qbo_id: string | null
+          status: string | null
+          sync_status: string | null
+          terms: string | null
+          total: number | null
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          balance?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          custom_fields?: Json | null
+          customer_id?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_date?: string | null
+          invoice_number: string
+          last_sync_at?: string | null
+          memo?: string | null
+          organization_id?: string | null
+          qbo_id?: string | null
+          status?: string | null
+          sync_status?: string | null
+          terms?: string | null
+          total?: number | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          balance?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          custom_fields?: Json | null
+          customer_id?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_date?: string | null
+          invoice_number?: string
+          last_sync_at?: string | null
+          memo?: string | null
+          organization_id?: string | null
+          qbo_id?: string | null
+          status?: string | null
+          sync_status?: string | null
+          terms?: string | null
+          total?: number | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customer_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       item_inventory: {
         Row: {
           average_cost: number | null

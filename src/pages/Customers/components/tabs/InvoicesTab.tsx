@@ -6,6 +6,7 @@ import StatusBadge from '@/components/ui/data-display/StatusBadge';
 import { FileText } from 'lucide-react';
 import { formatCurrency } from '@/lib/formatters';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface Invoice {
   id: string;
@@ -23,6 +24,7 @@ interface InvoicesTabProps {
 
 const InvoicesTab: React.FC<InvoicesTabProps> = ({ customerId }) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -36,9 +38,16 @@ const InvoicesTab: React.FC<InvoicesTabProps> = ({ customerId }) => {
           .eq('customer_id', customerId)
           .order('invoice_date', { ascending: false });
         
-        if (error) throw error;
+        if (error) {
+          toast({
+            variant: "destructive",
+            title: "Error fetching invoices",
+            description: error.message,
+          });
+          throw error;
+        }
         
-        setInvoices(data || []);
+        setInvoices(data as Invoice[] || []);
       } catch (error) {
         console.error('Error fetching customer invoices:', error);
         setInvoices([]);
@@ -50,7 +59,7 @@ const InvoicesTab: React.FC<InvoicesTabProps> = ({ customerId }) => {
     if (customerId) {
       fetchCustomerInvoices();
     }
-  }, [customerId]);
+  }, [customerId, toast]);
   
   if (isLoading) {
     return (

@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 const dummyInvoices = [
   {
@@ -169,16 +169,21 @@ export const seedIfEmptyInvoices = async () => {
   if (!hasInvoices) {
     const result = await seedDummyInvoices();
     if (result.success) {
+      // Using direct import to avoid circular dependency
+      const { toast } = require('@/hooks/use-toast');
       toast({
         title: "Dummy invoices created",
         description: `${result.count} sample invoices have been added for testing`,
       });
     } else {
+      const { toast } = require('@/hooks/use-toast');
       toast({
         variant: "destructive",
         title: "Failed to create dummy invoices",
         description: result.error,
       });
     }
+    return result;
   }
+  return { success: true, count: 0, message: "Invoices already exist" };
 };

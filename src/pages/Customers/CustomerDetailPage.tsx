@@ -29,7 +29,7 @@ const CustomerDetailPage = () => {
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
           <h2 className="text-xl font-semibold">Customer not found</h2>
-          <p className="text-muted-foreground">{error || "The customer you're looking for doesn't exist"}</p>
+          <p className="text-muted-foreground">{error ? error.toString() : "The customer you're looking for doesn't exist"}</p>
           <Button onClick={() => navigate('/customers')} className="mt-4">
             Back to Customers
           </Button>

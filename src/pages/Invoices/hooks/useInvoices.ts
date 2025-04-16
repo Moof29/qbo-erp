@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 export interface Invoice {
   id: string;
@@ -20,6 +21,7 @@ export const useInvoices = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const { toast } = useToast();
 
   // Function to fetch invoices
   const fetchInvoices = async () => {
@@ -46,7 +48,14 @@ export const useInvoices = () => {
       
       const { data, error } = await query;
       
-      if (error) throw error;
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error fetching invoices",
+          description: error.message,
+        });
+        throw error;
+      }
       
       // Format the data to include customer name
       const formattedData = (data || []).map(invoice => ({
