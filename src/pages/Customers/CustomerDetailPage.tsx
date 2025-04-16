@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -73,30 +74,31 @@ const CustomerDetailPage = () => {
         </CardContent>
       </Card>
     
-    <Tabs defaultValue="details" className="mt-6">
-      <TabsList className="grid w-full md:w-auto grid-cols-4 mb-4">
-        <TabsTrigger value="details">Details</TabsTrigger>
-        <TabsTrigger value="invoices">Invoices</TabsTrigger>
-        <TabsTrigger value="payments">Payments</TabsTrigger>
-        <TabsTrigger value="notes">Notes</TabsTrigger>
-      </TabsList>
-      
-      <TabsContent value="details">
-        <DetailsTab customer={customer} />
-      </TabsContent>
-      
-      <TabsContent value="invoices">
-        <InvoicesTab customerId={id || ''} />
-      </TabsContent>
-      
-      <TabsContent value="payments">
-        <PaymentsTab payments={mockPayments} />
-      </TabsContent>
-      
-      <TabsContent value="notes">
-        <NotesTab notes={mockNotes} />
-      </TabsContent>
-    </Tabs>
+      <Tabs defaultValue="details" className="mt-6">
+        <TabsList className="grid w-full md:w-auto grid-cols-4 mb-4">
+          <TabsTrigger value="details">Details</TabsTrigger>
+          <TabsTrigger value="invoices">Invoices</TabsTrigger>
+          <TabsTrigger value="payments">Payments</TabsTrigger>
+          <TabsTrigger value="notes">Notes</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="details">
+          <DetailsTab customer={customer} />
+        </TabsContent>
+        
+        <TabsContent value="invoices">
+          <InvoicesTab customerId={id || ''} />
+        </TabsContent>
+        
+        <TabsContent value="payments">
+          <PaymentsTab payments={mockPayments} />
+        </TabsContent>
+        
+        <TabsContent value="notes">
+          <NotesTab notes={mockNotes} />
+        </TabsContent>
+      </Tabs>
+    </>
   );
 };
 
