@@ -19,7 +19,7 @@ export interface Organization {
   qbo_token_expires_at?: string | null;
   is_active: boolean;
   created_at: string;
-  updated_at?: string;
+  updated_at?: string | null;
 }
 
 export interface UserOrganization {
@@ -32,7 +32,7 @@ export interface UserOrganization {
   invited_by?: string | null;
   is_active: boolean;
   created_at?: string;
-  updated_at?: string;
+  updated_at?: string | null;
 }
 
 // This represents an organization with the user's role in it
@@ -64,7 +64,7 @@ interface UserOrgJoinResult {
 }
 
 // Create Supabase client
-export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     autoRefreshToken: true,
     persistSession: true
