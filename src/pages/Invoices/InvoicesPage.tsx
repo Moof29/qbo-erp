@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import PageHeader from '@/components/ui/elements/PageHeader';
-import { seedIfEmptyInvoices } from '@/utils/seedInvoiceData';
+import { seedIfEmptyInvoices, isSeedErrorResult } from '@/utils/seed';
 import { useInvoices } from './hooks/useInvoices';
 import { useToast } from '@/hooks/use-toast';
 import FloatingActionButton from '@/components/ui/actions/FloatingActionButton';
@@ -42,11 +42,11 @@ const InvoicesPage = () => {
             ? `${result.count} sample invoices have been added` 
             : result.message || "No new invoices were needed",
         });
-      } else {
+      } else if (isSeedErrorResult(result)) {
         toast({
           variant: "destructive",
           title: "Failed to add sample data",
-          description: result.success === false ? result.error : "Unknown error occurred",
+          description: result.error || "Unknown error occurred",
         });
       }
       refetch(); // Always refetch to ensure UI is updated
