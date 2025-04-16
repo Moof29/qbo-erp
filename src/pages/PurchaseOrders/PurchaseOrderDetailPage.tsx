@@ -1,9 +1,11 @@
+
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import PageHeader from '@/components/ui/elements/PageHeader';
 import StatusBadge from '@/components/ui/data-display/StatusBadge';
+import SyncStatus from '@/components/SyncManager/SyncStatus';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { UserRound, Calendar, Truck, FileText, Edit } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/formatters';
@@ -64,7 +66,13 @@ const PurchaseOrderDetailPage = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Purchase Order Info</h3>
-              <StatusBadge status={getValidStatus(purchaseOrder.status)} />
+              <div className="flex gap-2">
+                <StatusBadge status={getValidStatus(purchaseOrder.status)} />
+                <SyncStatus 
+                  status={purchaseOrder.sync_status} 
+                  lastSyncAt={purchaseOrder.last_sync_at} 
+                />
+              </div>
             </div>
             
             <div className="space-y-4">

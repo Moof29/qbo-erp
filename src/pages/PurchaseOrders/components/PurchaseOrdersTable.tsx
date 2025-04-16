@@ -1,8 +1,10 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileText } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import StatusBadge from '@/components/ui/data-display/StatusBadge';
+import SyncStatus from '@/components/SyncManager/SyncStatus';
 import { formatCurrency, formatDate } from '@/lib/formatters';
 import type { PurchaseOrder } from '../hooks/usePurchaseOrders';
 
@@ -56,6 +58,7 @@ const PurchaseOrdersTable: React.FC<PurchaseOrdersTableProps> = ({ purchaseOrder
           <TableHead>Expected Date</TableHead>
           <TableHead>Amount</TableHead>
           <TableHead>Status</TableHead>
+          <TableHead>Sync</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -72,6 +75,9 @@ const PurchaseOrdersTable: React.FC<PurchaseOrdersTableProps> = ({ purchaseOrder
             <TableCell>{po.total ? formatCurrency(po.total) : "—"}</TableCell>
             <TableCell>
               <StatusBadge status={getValidStatus(po.status)} />
+            </TableCell>
+            <TableCell>
+              <SyncStatus status={po.sync_status} />
             </TableCell>
           </TableRow>
         ))}
