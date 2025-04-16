@@ -9,14 +9,12 @@ import DetailsTab from './tabs/DetailsTab';
 
 interface CustomerTabsProps {
   customer: any;
-  mockInvoices: any[];
   mockPayments: any[];
   mockNotes: any[];
 }
 
 const CustomerTabs: React.FC<CustomerTabsProps> = ({
   customer,
-  mockInvoices,
   mockPayments,
   mockNotes,
 }) => {
@@ -34,7 +32,7 @@ const CustomerTabs: React.FC<CustomerTabsProps> = ({
           </TabsList>
           
           <TabsContent value="invoices" className="p-4">
-            <InvoicesTab invoices={mockInvoices} />
+            <InvoicesTab customerId={customer?.id || ''} />
           </TabsContent>
           
           <TabsContent value="payments" className="p-4">
