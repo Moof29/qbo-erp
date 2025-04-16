@@ -20,6 +20,12 @@ import VendorsPage from "@/pages/Vendors/VendorsPage";
 import VendorDetailPage from "@/pages/Vendors/VendorDetailPage";
 import NewVendorForm from "@/pages/Vendors/NewVendorForm";
 import BillsPage from "@/pages/Bills/BillsPage";
+import ItemsPage from "@/pages/Items/ItemsPage";
+import ItemDetailPage from "@/pages/Items/ItemDetailPage";
+import NewItemForm from "@/pages/Items/NewItemForm";
+import PurchaseOrdersPage from "@/pages/PurchaseOrders/PurchaseOrdersPage";
+import PurchaseOrderDetailPage from "@/pages/PurchaseOrders/PurchaseOrderDetailPage";
+import NewPurchaseOrderForm from "@/pages/PurchaseOrders/NewPurchaseOrderForm";
 import SettingsPage from "@/pages/Settings/SettingsPage";
 import NotFound from "@/pages/NotFound";
 
@@ -52,6 +58,12 @@ const App = () => (
               <Route path="vendors/new" element={<NewVendorForm />} />
               <Route path="vendors/:id" element={<VendorDetailPage />} />
               <Route path="bills" element={<BillsPage />} />
+              <Route path="items" element={<ItemsPage />} />
+              <Route path="items/new" element={<NewItemForm />} />
+              <Route path="items/:id" element={<ItemDetailPage />} />
+              <Route path="purchase-orders" element={<PurchaseOrdersPage />} />
+              <Route path="purchase-orders/new" element={<NewPurchaseOrderForm />} />
+              <Route path="purchase-orders/:id" element={<PurchaseOrderDetailPage />} />
               <Route path="settings" element={
                 <ProtectedRoute requiredRole="admin">
                   <SettingsPage />

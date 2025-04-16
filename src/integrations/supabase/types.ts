@@ -157,6 +157,207 @@ export type Database = {
           },
         ]
       }
+      item_inventory: {
+        Row: {
+          average_cost: number | null
+          created_at: string | null
+          id: string
+          item_id: string | null
+          last_inventory_date: string | null
+          last_sync_at: string | null
+          location: string | null
+          quantity_available: number | null
+          quantity_on_hand: number | null
+          quantity_on_order: number | null
+          quantity_reserved: number | null
+          updated_at: string | null
+          warehouse_id: string | null
+        }
+        Insert: {
+          average_cost?: number | null
+          created_at?: string | null
+          id?: string
+          item_id?: string | null
+          last_inventory_date?: string | null
+          last_sync_at?: string | null
+          location?: string | null
+          quantity_available?: number | null
+          quantity_on_hand?: number | null
+          quantity_on_order?: number | null
+          quantity_reserved?: number | null
+          updated_at?: string | null
+          warehouse_id?: string | null
+        }
+        Update: {
+          average_cost?: number | null
+          created_at?: string | null
+          id?: string
+          item_id?: string | null
+          last_inventory_date?: string | null
+          last_sync_at?: string | null
+          location?: string | null
+          quantity_available?: number | null
+          quantity_on_hand?: number | null
+          quantity_on_order?: number | null
+          quantity_reserved?: number | null
+          updated_at?: string | null
+          warehouse_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_inventory_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "item_record"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      item_pricing: {
+        Row: {
+          created_at: string | null
+          currency_id: string | null
+          effective_date: string | null
+          expiration_date: string | null
+          id: string
+          item_id: string | null
+          price: number
+          price_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          currency_id?: string | null
+          effective_date?: string | null
+          expiration_date?: string | null
+          id?: string
+          item_id?: string | null
+          price: number
+          price_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          currency_id?: string | null
+          effective_date?: string | null
+          expiration_date?: string | null
+          id?: string
+          item_id?: string | null
+          price?: number
+          price_type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_pricing_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "item_record"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      item_record: {
+        Row: {
+          asset_account_id: string | null
+          created_at: string | null
+          custom_fields: Json | null
+          description: string | null
+          expense_account_id: string | null
+          id: string
+          income_account_id: string | null
+          is_active: boolean | null
+          is_taxable: boolean | null
+          item_type: string | null
+          last_sync_at: string | null
+          manufacturer: string | null
+          manufacturer_part_number: string | null
+          name: string
+          organization_id: string | null
+          purchase_cost: number | null
+          purchase_description: string | null
+          qbo_id: string | null
+          reorder_point: number | null
+          size: string | null
+          size_unit: string | null
+          sku: string | null
+          sync_status: string | null
+          tax_code: string | null
+          tax_rate: number | null
+          updated_at: string | null
+          weight: number | null
+          weight_unit: string | null
+        }
+        Insert: {
+          asset_account_id?: string | null
+          created_at?: string | null
+          custom_fields?: Json | null
+          description?: string | null
+          expense_account_id?: string | null
+          id?: string
+          income_account_id?: string | null
+          is_active?: boolean | null
+          is_taxable?: boolean | null
+          item_type?: string | null
+          last_sync_at?: string | null
+          manufacturer?: string | null
+          manufacturer_part_number?: string | null
+          name: string
+          organization_id?: string | null
+          purchase_cost?: number | null
+          purchase_description?: string | null
+          qbo_id?: string | null
+          reorder_point?: number | null
+          size?: string | null
+          size_unit?: string | null
+          sku?: string | null
+          sync_status?: string | null
+          tax_code?: string | null
+          tax_rate?: number | null
+          updated_at?: string | null
+          weight?: number | null
+          weight_unit?: string | null
+        }
+        Update: {
+          asset_account_id?: string | null
+          created_at?: string | null
+          custom_fields?: Json | null
+          description?: string | null
+          expense_account_id?: string | null
+          id?: string
+          income_account_id?: string | null
+          is_active?: boolean | null
+          is_taxable?: boolean | null
+          item_type?: string | null
+          last_sync_at?: string | null
+          manufacturer?: string | null
+          manufacturer_part_number?: string | null
+          name?: string
+          organization_id?: string | null
+          purchase_cost?: number | null
+          purchase_description?: string | null
+          qbo_id?: string | null
+          reorder_point?: number | null
+          size?: string | null
+          size_unit?: string | null
+          sku?: string | null
+          sync_status?: string | null
+          tax_code?: string | null
+          tax_rate?: number | null
+          updated_at?: string | null
+          weight?: number | null
+          weight_unit?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_record_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           created_at: string | null
@@ -228,6 +429,173 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      purchase_order: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          currency_id: string | null
+          custom_fields: Json | null
+          exchange_rate: number | null
+          expected_date: string | null
+          id: string
+          last_sync_at: string | null
+          memo: string | null
+          organization_id: string | null
+          po_date: string | null
+          purchase_order_number: string | null
+          qbo_id: string | null
+          ship_to: string | null
+          status: string | null
+          sync_status: string | null
+          total: number | null
+          updated_at: string | null
+          updated_by: string | null
+          vendor_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          currency_id?: string | null
+          custom_fields?: Json | null
+          exchange_rate?: number | null
+          expected_date?: string | null
+          id?: string
+          last_sync_at?: string | null
+          memo?: string | null
+          organization_id?: string | null
+          po_date?: string | null
+          purchase_order_number?: string | null
+          qbo_id?: string | null
+          ship_to?: string | null
+          status?: string | null
+          sync_status?: string | null
+          total?: number | null
+          updated_at?: string | null
+          updated_by?: string | null
+          vendor_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          currency_id?: string | null
+          custom_fields?: Json | null
+          exchange_rate?: number | null
+          expected_date?: string | null
+          id?: string
+          last_sync_at?: string | null
+          memo?: string | null
+          organization_id?: string | null
+          po_date?: string | null
+          purchase_order_number?: string | null
+          qbo_id?: string | null
+          ship_to?: string | null
+          status?: string | null
+          sync_status?: string | null
+          total?: number | null
+          updated_at?: string | null
+          updated_by?: string | null
+          vendor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_order_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_order_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_order_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_order_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_profile"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchase_order_line_item: {
+        Row: {
+          amount: number | null
+          created_at: string | null
+          custom_fields: Json | null
+          description: string | null
+          id: string
+          item_id: string | null
+          last_sync_at: string | null
+          position: number | null
+          purchase_order_id: string | null
+          quantity: number | null
+          rate: number | null
+          tax_amount: number | null
+          tax_code: string | null
+          tax_rate: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string | null
+          custom_fields?: Json | null
+          description?: string | null
+          id?: string
+          item_id?: string | null
+          last_sync_at?: string | null
+          position?: number | null
+          purchase_order_id?: string | null
+          quantity?: number | null
+          rate?: number | null
+          tax_amount?: number | null
+          tax_code?: string | null
+          tax_rate?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string | null
+          custom_fields?: Json | null
+          description?: string | null
+          id?: string
+          item_id?: string | null
+          last_sync_at?: string | null
+          position?: number | null
+          purchase_order_id?: string | null
+          quantity?: number | null
+          rate?: number | null
+          tax_amount?: number | null
+          tax_code?: string | null
+          tax_rate?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_order_line_item_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "item_record"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_order_line_item_purchase_order_id_fkey"
+            columns: ["purchase_order_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_order"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_organizations: {
         Row: {
