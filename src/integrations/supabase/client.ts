@@ -5,8 +5,26 @@ import type { Database } from './types';
 const SUPABASE_URL = "https://jobmdcimyvekynnysola.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvYm1kY2lteXZla3lubnlzb2xhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ1ODM5NTcsImV4cCI6MjA2MDE1OTk1N30.kinoqr7nuNC8rVBEGfCe4CJzKPiwgC-hsWmv6gXz9rc";
 
+// Create a custom type that extends the generated Database type
+type CustomDatabase = Database & {
+  public: {
+    Tables: Database['public']['Tables'] & {
+      organizations: {
+        Row: Organization;
+        Insert: Partial<Organization>;
+        Update: Partial<Organization>;
+      };
+      user_organizations: {
+        Row: UserOrganization;
+        Insert: Partial<UserOrganization>;
+        Update: Partial<UserOrganization>;
+      };
+    }
+  }
+}
+
 // Create Supabase client with proper configuration
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+export const supabase = createClient<CustomDatabase>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     autoRefreshToken: true,
     persistSession: true
@@ -55,8 +73,16 @@ export interface OrganizationWithUserRole {
   userRole: string;
 }
 
+// Helper function type for the join result
+interface UserOrgJoinResult {
+  id: string;
+  organization_id: string;
+  role: string;
+  organizations: Organization;
+}
+
 // Helper functions for organizations
-export const fetchUserOrganizations = async (userId: string) => {
+export const fetchUserOrganizations = async (userId: string): Promise<UserOrgJoinResult[]> => {
   const { data, error } = await supabase
     .from('user_organizations')
     .select(`
@@ -77,10 +103,10 @@ export const fetchUserOrganizations = async (userId: string) => {
     .eq('is_active', true);
     
   if (error) throw error;
-  return data;
+  return data as unknown as UserOrgJoinResult[];
 };
 
-export const createOrganization = async (organizationData: Partial<Organization>) => {
+export const createOrganization = async (organizationData: Partial<Organization>): Promise<Organization> => {
   const { data, error } = await supabase
     .from('organizations')
     .insert(organizationData)
@@ -95,7 +121,7 @@ export const linkUserToOrganization = async (
   userId: string, 
   organizationId: string, 
   role: string = 'admin'
-) => {
+): Promise<UserOrganization> => {
   const { data, error } = await supabase
     .from('user_organizations')
     .insert({
@@ -104,7 +130,8 @@ export const linkUserToOrganization = async (
       role,
       accepted_at: new Date().toISOString()
     })
-    .select();
+    .select()
+    .single();
     
   if (error) throw error;
   return data;

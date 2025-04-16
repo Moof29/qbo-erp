@@ -1,6 +1,13 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase, fetchUserOrganizations, createOrganization, linkUserToOrganization, Organization, OrganizationWithUserRole } from '@/integrations/supabase/client';
+import { 
+  supabase, 
+  fetchUserOrganizations, 
+  createOrganization, 
+  linkUserToOrganization, 
+  Organization, 
+  OrganizationWithUserRole 
+} from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -106,7 +113,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (userOrgs) {
         const orgsWithDetails: OrganizationWithDetails[] = userOrgs.map(item => ({
-          ...item.organizations,
+          id: item.organizations.id,
+          name: item.organizations.name,
+          industry: item.organizations.industry,
+          plan_type: item.organizations.plan_type,
+          timezone: item.organizations.timezone,
+          is_active: item.organizations.is_active,
+          created_at: item.organizations.created_at,
           userRole: item.role
         }));
         
@@ -289,7 +302,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // 4. Set the new organization as current
       if (newOrg) {
         const newOrgWithDetails: OrganizationWithDetails = {
-          ...newOrg,
+          id: newOrg.id,
+          name: newOrg.name,
+          industry: newOrg.industry,
+          plan_type: newOrg.plan_type,
+          timezone: newOrg.timezone,
+          is_active: newOrg.is_active,
+          created_at: newOrg.created_at,
           userRole: 'admin'
         };
         setCurrentOrganization(newOrgWithDetails);
