@@ -108,6 +108,54 @@ export type Database = {
         }
         Relationships: []
       }
+      organizations: {
+        Row: {
+          created_at: string | null
+          id: string
+          industry: string | null
+          is_active: boolean | null
+          name: string
+          plan_type: string | null
+          qbo_access_token: string | null
+          qbo_company_id: string | null
+          qbo_realm_id: string | null
+          qbo_refresh_token: string | null
+          qbo_token_expires_at: string | null
+          timezone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          industry?: string | null
+          is_active?: boolean | null
+          name: string
+          plan_type?: string | null
+          qbo_access_token?: string | null
+          qbo_company_id?: string | null
+          qbo_realm_id?: string | null
+          qbo_refresh_token?: string | null
+          qbo_token_expires_at?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          industry?: string | null
+          is_active?: boolean | null
+          name?: string
+          plan_type?: string | null
+          qbo_access_token?: string | null
+          qbo_company_id?: string | null
+          qbo_realm_id?: string | null
+          qbo_refresh_token?: string | null
+          qbo_token_expires_at?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -131,6 +179,53 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      user_organizations: {
+        Row: {
+          accepted_at: string | null
+          created_at: string | null
+          id: string
+          invited_at: string | null
+          invited_by: string | null
+          is_active: boolean | null
+          organization_id: string
+          role: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string | null
+          id?: string
+          invited_at?: string | null
+          invited_by?: string | null
+          is_active?: boolean | null
+          organization_id: string
+          role: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string | null
+          id?: string
+          invited_at?: string | null
+          invited_by?: string | null
+          is_active?: boolean | null
+          organization_id?: string
+          role?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_organizations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

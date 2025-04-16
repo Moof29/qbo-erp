@@ -52,7 +52,15 @@ interface UserOrgJoinResult {
   id: string;
   organization_id: string;
   role: string;
-  organizations: Organization;
+  organizations: {
+    id: string;
+    name: string;
+    industry: string | null;
+    plan_type: string | null;
+    timezone: string | null;
+    is_active: boolean;
+    created_at: string;
+  };
 }
 
 // Create Supabase client
@@ -89,7 +97,7 @@ export const fetchUserOrganizations = async (userId: string): Promise<UserOrgJoi
   return data as unknown as UserOrgJoinResult[];
 };
 
-export const createOrganization = async (organizationData: Partial<Organization>): Promise<Organization> => {
+export const createOrganization = async (organizationData: Omit<Partial<Organization>, 'display_name'>): Promise<Organization> => {
   // We need to cast the result since the type system doesn't know about our custom tables
   const { data, error } = await supabase
     .from('organizations')
