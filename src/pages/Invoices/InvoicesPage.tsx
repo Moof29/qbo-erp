@@ -11,21 +11,52 @@ import { formatCurrency } from '@/lib/formatters';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { seedIfEmptyInvoices } from '@/utils/seedInvoiceData';
 import { useInvoices } from './hooks/useInvoices';
+import { useToast } from '@/hooks/use-toast';
+import FloatingActionButton from '@/components/ui/actions/FloatingActionButton';
+import SyncStatus from '@/components/SyncManager/SyncStatus';
 
 const InvoicesPage = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { invoices, isLoading, refetch, searchQuery, setSearchQuery, statusFilter, setStatusFilter } = useInvoices();
   
   // Check for dummy data on initial load
   useEffect(() => {
-    seedIfEmptyInvoices();
+    const checkAndSeedData = async () => {
+      await seedIfEmptyInvoices();
+      refetch();
+    };
+    
+    checkAndSeedData();
   }, []);
   
   // Seed dummy data function
-  const handleSeedDummyData = () => {
-    seedIfEmptyInvoices().then(() => {
-      refetch();
-    });
+  const handleSeedDummyData = async () => {
+    try {
+      const result = await seedIfEmptyInvoices();
+      if (result.success) {
+        toast({
+          title: "Invoice data added",
+          description: result.count > 0 
+            ? `${result.count} sample invoices have been added` 
+            : "No new invoices were needed",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Failed to add sample data",
+          description: result.error || "Unknown error occurred",
+        });
+      }
+      refetch(); // Always refetch to ensure UI is updated
+    } catch (error) {
+      console.error("Error in handleSeedDummyData:", error);
+      toast({
+        variant: "destructive",
+        title: "Error adding sample data",
+        description: String(error),
+      });
+    }
   };
 
   return (
@@ -100,12 +131,13 @@ const InvoicesPage = () => {
                 <TableHead>Amount</TableHead>
                 <TableHead>Balance</TableHead>
                 <TableHead>Payment Status</TableHead>
+                <TableHead>Sync Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center">
+                  <TableCell colSpan={8} className="h-24 text-center">
                     <div className="flex items-center justify-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                     </div>
@@ -130,14 +162,25 @@ const InvoicesPage = () => {
                     <TableCell>
                       <StatusBadge status={invoice.status as 'paid' | 'unpaid' | 'partial'} />
                     </TableCell>
+                    <TableCell>
+                      <SyncStatus status={invoice.sync_status} lastSyncAt={null} />
+                    </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center">
+                  <TableCell colSpan={8} className="h-24 text-center">
                     <div className="flex flex-col items-center justify-center text-muted-foreground">
                       <FileText size={32} className="mb-2" />
-                      No invoices found matching your criteria
+                      <p>No invoices found matching your criteria</p>
+                      <Button 
+                        variant="outline"
+                        size="sm"
+                        className="mt-2"
+                        onClick={handleSeedDummyData}
+                      >
+                        Add Sample Invoices
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -146,6 +189,13 @@ const InvoicesPage = () => {
           </Table>
         </div>
       </div>
+
+      <FloatingActionButton 
+        onClick={() => navigate('/invoices/new')}
+        position="bottom-right"
+      >
+        New Invoice
+      </FloatingActionButton>
     </>
   );
 };

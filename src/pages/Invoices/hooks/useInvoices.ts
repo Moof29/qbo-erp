@@ -28,6 +28,7 @@ export const useInvoices = () => {
     setIsLoading(true);
     
     try {
+      console.log("Fetching invoices...");
       // Start building the query
       let query = supabase
         .from('invoices')
@@ -49,6 +50,7 @@ export const useInvoices = () => {
       const { data, error } = await query;
       
       if (error) {
+        console.error("Error fetching invoices:", error);
         toast({
           variant: "destructive",
           title: "Error fetching invoices",
@@ -56,6 +58,8 @@ export const useInvoices = () => {
         });
         throw error;
       }
+      
+      console.log("Fetched invoices data:", data);
       
       // Format the data to include customer name
       const formattedData = (data || []).map(invoice => ({
@@ -82,9 +86,10 @@ export const useInvoices = () => {
         );
       }
       
+      console.log("Final invoices data after filtering:", filteredData);
       setInvoices(filteredData);
     } catch (error) {
-      console.error('Error fetching invoices:', error);
+      console.error('Error in fetchInvoices:', error);
       setInvoices([]);
     } finally {
       setIsLoading(false);

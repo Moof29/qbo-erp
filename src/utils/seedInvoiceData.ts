@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from 'uuid';
+import { toast } from "@/hooks/use-toast"; // Import toast directly instead of useToast
 
 const dummyInvoices = [
   {
@@ -161,24 +162,29 @@ export const checkInvoicesExist = async () => {
 };
 
 export const seedIfEmptyInvoices = async () => {
-  const hasInvoices = await checkInvoicesExist();
-  if (!hasInvoices) {
-    const { toast } = require('@/hooks/use-toast');
-    const result = await seedDummyInvoices();
-    if (result.success) {
-      toast({
-        title: "Dummy invoices created",
-        description: `${result.count} sample invoices have been added for testing`,
-      });
-      return result;
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Failed to create dummy invoices",
-        description: result.error || "Unknown error",
-      });
-      return result;
+  try {
+    const hasInvoices = await checkInvoicesExist();
+    if (!hasInvoices) {
+      // Use imported toast directly instead of requiring it
+      const result = await seedDummyInvoices();
+      if (result.success) {
+        toast({
+          title: "Dummy invoices created",
+          description: `${result.count} sample invoices have been added for testing`,
+        });
+        return result;
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Failed to create dummy invoices",
+          description: result.error || "Unknown error",
+        });
+        return result;
+      }
     }
+    return { success: true, count: 0, message: "Invoices already exist" };
+  } catch (error) {
+    console.error("Error in seedIfEmptyInvoices:", error);
+    return { success: false, error: String(error) };
   }
-  return { success: true, count: 0, message: "Invoices already exist" };
 };
