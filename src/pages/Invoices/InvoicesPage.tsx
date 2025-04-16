@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,29 +9,24 @@ import StatusBadge from '@/components/ui/data-display/StatusBadge';
 import { Search, Calendar, FileText, Plus } from 'lucide-react';
 import { formatCurrency } from '@/lib/formatters';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
-// Mock data
-const invoices = [
-  { id: 'INV-2023-001', customer: 'Acme Inc.', invoiceDate: '2023-05-01', dueDate: '2023-05-15', amount: 1250.00, balance: 0, status: 'paid' },
-  { id: 'INV-2023-002', customer: 'Tech Solutions', invoiceDate: '2023-05-05', dueDate: '2023-05-20', amount: 3450.75, balance: 3450.75, status: 'unpaid' },
-  { id: 'INV-2023-003', customer: 'Global Enterprises', invoiceDate: '2023-05-07', dueDate: '2023-05-22', amount: 870.25, balance: 400.25, status: 'partial' },
-  { id: 'INV-2023-004', customer: 'Local Business', invoiceDate: '2023-05-10', dueDate: '2023-05-30', amount: 1100.00, balance: 1100.00, status: 'unpaid' },
-  { id: 'INV-2023-005', customer: 'Acme Inc.', invoiceDate: '2023-05-12', dueDate: '2023-05-27', amount: 2700.50, balance: 2700.50, status: 'unpaid' },
-];
+import { seedIfEmptyInvoices } from '@/utils/seedInvoiceData';
+import { useInvoices } from './hooks/useInvoices';
 
 const InvoicesPage = () => {
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-
-  const filteredInvoices = invoices.filter(invoice => {
-    const matchesSearch = 
-      invoice.customer.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      invoice.id.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    if (statusFilter === 'all') return matchesSearch;
-    return matchesSearch && invoice.status === statusFilter;
-  });
+  const { invoices, isLoading, refetch, searchQuery, setSearchQuery, statusFilter, setStatusFilter } = useInvoices();
+  
+  // Check for dummy data on initial load
+  useEffect(() => {
+    seedIfEmptyInvoices();
+  }, []);
+  
+  // Seed dummy data function
+  const handleSeedDummyData = () => {
+    seedIfEmptyInvoices().then(() => {
+      refetch();
+    });
+  };
 
   return (
     <>
@@ -39,10 +34,21 @@ const InvoicesPage = () => {
         title="Invoices" 
         subtitle="Manage your customer invoices"
         actions={
-          <Button onClick={() => navigate('/invoices/new')}>
-            <Plus className="mr-2 h-4 w-4" />
-            New Invoice
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={handleSeedDummyData} 
+              variant="outline" 
+              className="gap-2"
+              disabled={isLoading}
+            >
+              <FileText className="h-4 w-4" />
+              Add Sample Data
+            </Button>
+            <Button onClick={() => navigate('/invoices/new')} className="gap-2">
+              <Plus className="mr-2 h-4 w-4" />
+              New Invoice
+            </Button>
+          </div>
         }
       />
       
@@ -97,24 +103,32 @@ const InvoicesPage = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredInvoices.length > 0 ? (
-                filteredInvoices.map((invoice) => (
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="h-24 text-center">
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : invoices.length > 0 ? (
+                invoices.map((invoice) => (
                   <TableRow 
                     key={invoice.id}
                     className="cursor-pointer hover:bg-muted/50"
                     onClick={() => navigate(`/invoices/${invoice.id}`)}
                   >
-                    <TableCell className="font-medium">{invoice.id}</TableCell>
-                    <TableCell>{invoice.customer}</TableCell>
-                    <TableCell>{invoice.invoiceDate}</TableCell>
+                    <TableCell className="font-medium">{invoice.invoice_number}</TableCell>
+                    <TableCell>{invoice.customer_name || 'Unknown Customer'}</TableCell>
+                    <TableCell>{invoice.invoice_date}</TableCell>
                     <TableCell className="flex items-center gap-1">
                       <Calendar size={14} />
-                      {invoice.dueDate}
+                      {invoice.due_date}
                     </TableCell>
-                    <TableCell>{formatCurrency(invoice.amount)}</TableCell>
+                    <TableCell>{formatCurrency(invoice.total)}</TableCell>
                     <TableCell>{formatCurrency(invoice.balance)}</TableCell>
                     <TableCell>
-                      <StatusBadge status={invoice.status as any} />
+                      <StatusBadge status={invoice.status as 'paid' | 'unpaid' | 'partial'} />
                     </TableCell>
                   </TableRow>
                 ))

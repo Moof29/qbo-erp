@@ -1,25 +1,64 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import StatusBadge from '@/components/ui/data-display/StatusBadge';
 import { FileText } from 'lucide-react';
 import { formatCurrency } from '@/lib/formatters';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Invoice {
   id: string;
-  date: string;
+  invoice_number: string;
+  invoice_date: string;
   due_date: string;
-  amount: number;
+  total: number;
+  balance: number;
   status: string;
 }
 
 interface InvoicesTabProps {
-  invoices: Invoice[];
+  customerId: string;
 }
 
-const InvoicesTab: React.FC<InvoicesTabProps> = ({ invoices }) => {
+const InvoicesTab: React.FC<InvoicesTabProps> = ({ customerId }) => {
   const navigate = useNavigate();
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchCustomerInvoices = async () => {
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('invoices')
+          .select('*')
+          .eq('customer_id', customerId)
+          .order('invoice_date', { ascending: false });
+        
+        if (error) throw error;
+        
+        setInvoices(data || []);
+      } catch (error) {
+        console.error('Error fetching customer invoices:', error);
+        setInvoices([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    if (customerId) {
+      fetchCustomerInvoices();
+    }
+  }, [customerId]);
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-32">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
   
   return (
     <Table>
@@ -40,12 +79,12 @@ const InvoicesTab: React.FC<InvoicesTabProps> = ({ invoices }) => {
               className="cursor-pointer hover:bg-muted/50"
               onClick={() => navigate(`/invoices/${invoice.id}`)}
             >
-              <TableCell className="font-medium">{invoice.id}</TableCell>
-              <TableCell>{invoice.date}</TableCell>
+              <TableCell className="font-medium">{invoice.invoice_number}</TableCell>
+              <TableCell>{invoice.invoice_date}</TableCell>
               <TableCell>{invoice.due_date}</TableCell>
-              <TableCell>{formatCurrency(invoice.amount)}</TableCell>
+              <TableCell>{formatCurrency(invoice.total)}</TableCell>
               <TableCell>
-                <StatusBadge status={invoice.status as 'paid' | 'unpaid'} />
+                <StatusBadge status={invoice.status as 'paid' | 'unpaid' | 'partial'} />
               </TableCell>
             </TableRow>
           ))

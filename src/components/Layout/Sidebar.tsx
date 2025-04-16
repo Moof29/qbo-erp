@@ -10,7 +10,8 @@ import {
   Receipt, 
   Settings,
   Package,
-  ShoppingCart 
+  ShoppingCart,
+  BarChart
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
@@ -74,6 +75,7 @@ const Sidebar = ({ collapsed = false }: SidebarProps) => {
         <NavItem to="/bills" icon={Receipt} collapsed={collapsed}>Bills</NavItem>
         <NavItem to="/items" icon={Package} collapsed={collapsed}>Items</NavItem>
         <NavItem to="/purchase-orders" icon={ShoppingCart} collapsed={collapsed}>Purchase Orders</NavItem>
+        <NavItem to="/accounts" icon={BarChart} collapsed={collapsed}>Accounts</NavItem>
         
         <div className="pt-4 mt-4 border-t">
           <NavItem to="/settings" icon={Settings} collapsed={collapsed} requiredRole="admin">Settings</NavItem>

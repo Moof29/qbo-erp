@@ -1,44 +1,35 @@
-
 import React from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PageHeader from '@/components/ui/elements/PageHeader';
-import { Edit, FileText, CreditCard, ArrowLeft } from 'lucide-react';
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import CustomerForm from './CustomerForm';
 import { useCustomerDetail } from './hooks/useCustomerDetail';
-import CustomerInfo from './components/CustomerInfo';
-import CustomerTabs from './components/CustomerTabs';
+import DetailsTab from './components/tabs/DetailsTab';
+import InvoicesTab from './components/tabs/InvoicesTab';
+import PaymentsTab from './components/tabs/PaymentsTab';
+import NotesTab from './components/tabs/NotesTab';
 
 const CustomerDetailPage = () => {
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
-  
-  const {
-    customer,
-    isLoading,
-    error,
-    mockInvoices,
-    mockPayments,
-    mockNotes
-  } = useCustomerDetail(id);
+  const { id } = useParams();
+  const { customer, isLoading, error, mockPayments, mockNotes } = useCustomerDetail(id || '');
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full p-8">
-        <div className="animate-spin rounded-full border-t-2 border-primary h-12 w-12" />
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   if (error || !customer) {
     return (
-      <div className="flex items-center justify-center h-full p-8">
-        <div className="text-center max-w-md">
-          <h2 className="text-xl font-semibold mb-2">Customer not found</h2>
-          <p className="text-muted-foreground mb-4">The customer you're looking for doesn't exist or you don't have permission to view it.</p>
-          <Button onClick={() => navigate('/customers')}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold">Customer not found</h2>
+          <p className="text-muted-foreground">{error || "The customer you're looking for doesn't exist"}</p>
+          <Button onClick={() => navigate('/customers')} className="mt-4">
             Back to Customers
           </Button>
         </div>
@@ -48,50 +39,64 @@ const CustomerDetailPage = () => {
 
   return (
     <>
-      <div className="sticky top-0 bg-background z-10 pb-4">
-        <PageHeader 
-          title={customer.display_name}
-          subtitle={customer.company_name || 'Individual Customer'}
-          actions={
-            <div className="flex flex-wrap gap-2">
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="outline">
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit Customer
-                  </Button>
-                </SheetTrigger>
-                <SheetContent className="w-full sm:max-w-xl md:max-w-2xl overflow-y-auto">
-                  <div className="p-4 md:p-6">
-                    <CustomerForm customerId={customer.id} />
-                  </div>
-                </SheetContent>
-              </Sheet>
-              
-              <Button onClick={() => navigate(`/invoices/new?customer=${id}`)}>
-                <FileText className="mr-2 h-4 w-4" />
-                New Invoice
-              </Button>
-              
-              <Button variant="outline">
-                <CreditCard className="mr-2 h-4 w-4" />
-                Record Payment
-              </Button>
-            </div>
-          }
-        />
-      </div>
+      <PageHeader 
+        title={customer.display_name}
+        subtitle={`Since ${customer.created_at}`}
+        actions={
+          <Button variant="outline" onClick={() => navigate(`/customers/edit/${id}`)}>
+            Edit Customer
+          </Button>
+        }
+      />
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <CustomerInfo customer={customer} />
-        <CustomerTabs 
-          customer={customer}
-          mockInvoices={mockInvoices}
-          mockPayments={mockPayments}
-          mockNotes={mockNotes}
-        />
-      </div>
-    </>
+      <Card className="mb-6">
+        <CardContent className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Customer Info</h3>
+              <div className="text-sm text-muted-foreground">
+                {customer.company_name && <div>Company: {customer.company_name}</div>}
+                <div>Email: {customer.email}</div>
+                {customer.phone && <div>Phone: {customer.phone}</div>}
+              </div>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Billing Address</h3>
+              <div className="text-sm text-muted-foreground">
+                <div>{customer.billing_address_line1}</div>
+                {customer.billing_address_line2 && <div>{customer.billing_address_line2}</div>}
+                <div>{customer.billing_city}, {customer.billing_state} {customer.billing_postal_code}</div>
+                <div>{customer.billing_country}</div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    
+    <Tabs defaultValue="details" className="mt-6">
+      <TabsList className="grid w-full md:w-auto grid-cols-4 mb-4">
+        <TabsTrigger value="details">Details</TabsTrigger>
+        <TabsTrigger value="invoices">Invoices</TabsTrigger>
+        <TabsTrigger value="payments">Payments</TabsTrigger>
+        <TabsTrigger value="notes">Notes</TabsTrigger>
+      </TabsList>
+      
+      <TabsContent value="details">
+        <DetailsTab customer={customer} />
+      </TabsContent>
+      
+      <TabsContent value="invoices">
+        <InvoicesTab customerId={id || ''} />
+      </TabsContent>
+      
+      <TabsContent value="payments">
+        <PaymentsTab payments={mockPayments} />
+      </TabsContent>
+      
+      <TabsContent value="notes">
+        <NotesTab notes={mockNotes} />
+      </TabsContent>
+    </Tabs>
   );
 };
 
