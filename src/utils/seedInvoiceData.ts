@@ -1,11 +1,11 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { v4 as uuidv4 } from 'uuid';
 
 const dummyInvoices = [
   {
     invoice_number: 'INV-2023-001',
-    customer_id: null, // Will be populated dynamically
     invoice_date: '2023-05-01',
     due_date: '2023-05-15',
     total: 1250.00,
@@ -17,7 +17,6 @@ const dummyInvoices = [
   },
   {
     invoice_number: 'INV-2023-002',
-    customer_id: null, // Will be populated dynamically
     invoice_date: '2023-05-05',
     due_date: '2023-05-20',
     total: 3450.75,
@@ -29,7 +28,6 @@ const dummyInvoices = [
   },
   {
     invoice_number: 'INV-2023-003',
-    customer_id: null, // Will be populated dynamically
     invoice_date: '2023-05-07',
     due_date: '2023-05-22',
     total: 870.25,
@@ -41,7 +39,6 @@ const dummyInvoices = [
   },
   {
     invoice_number: 'INV-2023-004',
-    customer_id: null, // Will be populated dynamically
     invoice_date: '2023-05-10',
     due_date: '2023-05-30',
     total: 1100.00,
@@ -53,7 +50,6 @@ const dummyInvoices = [
   },
   {
     invoice_number: 'INV-2023-005',
-    customer_id: null, // Will be populated dynamically
     invoice_date: '2023-05-12',
     due_date: '2023-05-27',
     total: 2700.50,
@@ -70,35 +66,57 @@ export const seedDummyInvoices = async () => {
     // Get current user and organization
     const { data: { user } } = await supabase.auth.getUser();
     
-    // For development purposes, use a fixed user and organization ID if auth is not available
-    const userId = user?.id || 'dev-user-id';
-    let organizationId = 'dev-org-id';
+    // For development purposes, we'll use fixed IDs if auth is not available
+    const userId = user?.id || uuidv4();
+    let organizationId = uuidv4(); // Default org ID for development
     
     if (user?.id) {
       // If user is authenticated, get their real organization
-      const { data: userOrgs, error: orgError } = await supabase
+      const { data: userOrgs } = await supabase
         .from('user_organizations')
         .select('organization_id')
         .eq('user_id', user.id)
         .eq('is_active', true)
         .limit(1);
       
-      if (orgError) {
-        console.error("Error fetching user organizations:", orgError);
-      } else if (userOrgs && userOrgs.length > 0) {
+      if (userOrgs && userOrgs.length > 0) {
         organizationId = userOrgs[0].organization_id;
       }
     }
     
     // Try to get customers to associate with invoices
-    const { data: customers, error: customerError } = await supabase
+    const { data: customers } = await supabase
       .from('customer_profile')
       .select('id, display_name')
-      .eq('organization_id', organizationId)
       .limit(5);
     
-    if (customerError) {
-      console.error("Error fetching customers:", customerError);
+    // If no customers exist, create a dummy one
+    let customerIds = [];
+    if (!customers || customers.length === 0) {
+      const { data: newCustomer } = await supabase
+        .from('customer_profile')
+        .insert([
+          { 
+            display_name: 'Acme Inc.', 
+            company_name: 'Acme Corporation', 
+            organization_id: organizationId,
+            created_by: userId,
+            updated_by: userId,
+            balance: 5000.00,
+            is_active: true
+          }
+        ])
+        .select();
+        
+      if (newCustomer && newCustomer.length > 0) {
+        customerIds = [newCustomer[0].id];
+      }
+    } else {
+      customerIds = customers.map(c => c.id);
+    }
+    
+    if (customerIds.length === 0) {
+      throw new Error("No customers available to create invoices for");
     }
     
     // Add organization_id, created_by, and map customer_ids to invoices
@@ -107,8 +125,8 @@ export const seedDummyInvoices = async () => {
       organization_id: organizationId,
       created_by: userId,
       updated_by: userId,
-      // Assign customer ID if available, otherwise leave null
-      customer_id: customers && customers[index % customers.length] ? customers[index % customers.length].id : null,
+      // Assign customer ID round-robin style
+      customer_id: customerIds[index % customerIds.length],
     }));
     
     // Insert invoices
@@ -128,32 +146,10 @@ export const seedDummyInvoices = async () => {
 
 export const checkInvoicesExist = async () => {
   try {
-    // Get current user and organization
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    // For development purposes, use a fixed organization ID if auth is not available
-    let organizationId = 'dev-org-id';
-    
-    if (user?.id) {
-      // If user is authenticated, get their real organization
-      const { data: userOrgs, error: orgError } = await supabase
-        .from('user_organizations')
-        .select('organization_id')
-        .eq('user_id', user.id)
-        .eq('is_active', true)
-        .limit(1);
-      
-      if (orgError) {
-        console.error("Error fetching user organizations:", orgError);
-      } else if (userOrgs && userOrgs.length > 0) {
-        organizationId = userOrgs[0].organization_id;
-      }
-    }
-    
+    // Simple count query to check if any invoices exist
     const { count, error } = await supabase
       .from('invoices')
-      .select('*', { count: 'exact', head: true })
-      .eq('organization_id', organizationId);
+      .select('*', { count: 'exact', head: true });
     
     if (error) throw error;
     
@@ -167,23 +163,22 @@ export const checkInvoicesExist = async () => {
 export const seedIfEmptyInvoices = async () => {
   const hasInvoices = await checkInvoicesExist();
   if (!hasInvoices) {
+    const { toast } = require('@/hooks/use-toast');
     const result = await seedDummyInvoices();
     if (result.success) {
-      // Using direct import to avoid circular dependency
-      const { toast } = require('@/hooks/use-toast');
       toast({
         title: "Dummy invoices created",
         description: `${result.count} sample invoices have been added for testing`,
       });
+      return result;
     } else {
-      const { toast } = require('@/hooks/use-toast');
       toast({
         variant: "destructive",
         title: "Failed to create dummy invoices",
-        description: result.error,
+        description: result.error || "Unknown error",
       });
+      return result;
     }
-    return result;
   }
   return { success: true, count: 0, message: "Invoices already exist" };
 };

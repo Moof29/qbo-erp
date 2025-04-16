@@ -32,9 +32,15 @@ const InvoicesTab: React.FC<InvoicesTabProps> = ({ customerId }) => {
     const fetchCustomerInvoices = async () => {
       setIsLoading(true);
       try {
+        if (!customerId) {
+          setInvoices([]);
+          setIsLoading(false);
+          return;
+        }
+        
         const { data, error } = await supabase
           .from('invoices')
-          .select('*')
+          .select('id, invoice_number, invoice_date, due_date, total, balance, status')
           .eq('customer_id', customerId)
           .order('invoice_date', { ascending: false });
         
@@ -56,9 +62,7 @@ const InvoicesTab: React.FC<InvoicesTabProps> = ({ customerId }) => {
       }
     };
     
-    if (customerId) {
-      fetchCustomerInvoices();
-    }
+    fetchCustomerInvoices();
   }, [customerId, toast]);
   
   if (isLoading) {

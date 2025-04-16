@@ -1,5 +1,6 @@
+
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { v4 as uuidv4 } from 'uuid';
 
 const dummyVendors = [
   {
@@ -104,23 +105,45 @@ export const seedDummyVendors = async () => {
     // Get current user and organization
     const { data: { user } } = await supabase.auth.getUser();
     
-    // For development purposes, use a fixed user and organization ID if auth is not available
-    const userId = user?.id || 'dev-user-id';
-    let organizationId = 'dev-org-id';
+    // For development purposes, use a generated UUID if auth is not available
+    const userId = user?.id || uuidv4();
+    let organizationId = uuidv4(); // Default org ID for development
     
     if (user?.id) {
       // If user is authenticated, get their real organization
-      const { data: userOrgs, error: orgError } = await supabase
+      const { data: userOrgs } = await supabase
         .from('user_organizations')
         .select('organization_id')
         .eq('user_id', user.id)
         .eq('is_active', true)
         .limit(1);
       
-      if (orgError) {
-        console.error("Error fetching user organizations:", orgError);
-      } else if (userOrgs && userOrgs.length > 0) {
+      if (userOrgs && userOrgs.length > 0) {
         organizationId = userOrgs[0].organization_id;
+      }
+    }
+    
+    // Create an organization if we couldn't find one
+    if (!organizationId) {
+      const { data: newOrg } = await supabase
+        .from('organizations')
+        .insert({ name: 'Default Organization' })
+        .select();
+      
+      if (newOrg && newOrg.length > 0) {
+        organizationId = newOrg[0].id;
+        
+        // Link user to organization if we have a user
+        if (user?.id) {
+          await supabase
+            .from('user_organizations')
+            .insert({
+              user_id: user.id,
+              organization_id: organizationId,
+              role: 'admin',
+              is_active: true
+            });
+        }
       }
     }
     
@@ -148,32 +171,9 @@ export const seedDummyVendors = async () => {
 
 export const checkVendorsExist = async () => {
   try {
-    // Get current user and organization
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    // For development purposes, use a fixed organization ID if auth is not available
-    let organizationId = 'dev-org-id';
-    
-    if (user?.id) {
-      // If user is authenticated, get their real organization
-      const { data: userOrgs, error: orgError } = await supabase
-        .from('user_organizations')
-        .select('organization_id')
-        .eq('user_id', user.id)
-        .eq('is_active', true)
-        .limit(1);
-      
-      if (orgError) {
-        console.error("Error fetching user organizations:", orgError);
-      } else if (userOrgs && userOrgs.length > 0) {
-        organizationId = userOrgs[0].organization_id;
-      }
-    }
-    
     const { count, error } = await supabase
       .from('vendor_profile')
-      .select('*', { count: 'exact', head: true })
-      .eq('organization_id', organizationId);
+      .select('*', { count: 'exact', head: true });
     
     if (error) throw error;
     
@@ -185,20 +185,28 @@ export const checkVendorsExist = async () => {
 };
 
 export const seedIfEmptyVendors = async () => {
-  const hasVendors = await checkVendorsExist();
-  if (!hasVendors) {
-    const result = await seedDummyVendors();
-    if (result.success) {
-      toast({
-        title: "Dummy vendors created",
-        description: `${result.count} sample vendors have been added for testing`,
-      });
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Failed to create dummy vendors",
-        description: result.error,
-      });
+  try {
+    const hasVendors = await checkVendorsExist();
+    if (!hasVendors) {
+      const { toast } = require('@/hooks/use-toast');
+      const result = await seedDummyVendors();
+      if (result.success) {
+        toast({
+          title: "Dummy vendors created",
+          description: `${result.count} sample vendors have been added for testing`,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Failed to create dummy vendors",
+          description: result.error || "Unknown error",
+        });
+      }
+      return result;
     }
+    return { success: true, count: 0, message: "Vendors already exist" };
+  } catch (error: any) {
+    console.error("Error in seedIfEmptyVendors:", error.message);
+    return { success: false, error: error.message };
   }
 };
