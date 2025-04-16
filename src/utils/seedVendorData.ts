@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -105,31 +104,32 @@ export const seedDummyVendors = async () => {
     // Get current user and organization
     const { data: { user } } = await supabase.auth.getUser();
     
-    if (!user?.id) {
-      throw new Error('User not authenticated');
+    // For development purposes, use a fixed user and organization ID if auth is not available
+    const userId = user?.id || 'dev-user-id';
+    let organizationId = 'dev-org-id';
+    
+    if (user?.id) {
+      // If user is authenticated, get their real organization
+      const { data: userOrgs, error: orgError } = await supabase
+        .from('user_organizations')
+        .select('organization_id')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .limit(1);
+      
+      if (orgError) {
+        console.error("Error fetching user organizations:", orgError);
+      } else if (userOrgs && userOrgs.length > 0) {
+        organizationId = userOrgs[0].organization_id;
+      }
     }
-    
-    // Get the organization ID for the current user
-    const { data: userOrgs, error: orgError } = await supabase
-      .from('user_organizations')
-      .select('organization_id')
-      .eq('user_id', user.id)
-      .eq('is_active', true)
-      .limit(1);
-    
-    if (orgError) throw orgError;
-    if (!userOrgs || userOrgs.length === 0) {
-      throw new Error('No active organization found for user');
-    }
-    
-    const organizationId = userOrgs[0].organization_id;
     
     // Add organization_id and created_by to all vendor records
     const vendorsToInsert = dummyVendors.map(vendor => ({
       ...vendor,
       organization_id: organizationId,
-      created_by: user.id,
-      updated_by: user.id
+      created_by: userId,
+      updated_by: userId
     }));
     
     const { data, error } = await supabase
@@ -151,30 +151,24 @@ export const checkVendorsExist = async () => {
     // Get current user and organization
     const { data: { user } } = await supabase.auth.getUser();
     
-    if (!user?.id) {
-      console.error("User not authenticated");
-      return false;
+    // For development purposes, use a fixed organization ID if auth is not available
+    let organizationId = 'dev-org-id';
+    
+    if (user?.id) {
+      // If user is authenticated, get their real organization
+      const { data: userOrgs, error: orgError } = await supabase
+        .from('user_organizations')
+        .select('organization_id')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .limit(1);
+      
+      if (orgError) {
+        console.error("Error fetching user organizations:", orgError);
+      } else if (userOrgs && userOrgs.length > 0) {
+        organizationId = userOrgs[0].organization_id;
+      }
     }
-    
-    // Get the organization ID for the current user
-    const { data: userOrgs, error: orgError } = await supabase
-      .from('user_organizations')
-      .select('organization_id')
-      .eq('user_id', user.id)
-      .eq('is_active', true)
-      .limit(1);
-    
-    if (orgError) {
-      console.error("Error fetching user organizations:", orgError);
-      return false;
-    }
-    
-    if (!userOrgs || userOrgs.length === 0) {
-      console.error("No active organization found for user");
-      return false;
-    }
-    
-    const organizationId = userOrgs[0].organization_id;
     
     const { count, error } = await supabase
       .from('vendor_profile')

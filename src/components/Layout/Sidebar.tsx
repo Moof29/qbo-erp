@@ -8,7 +8,9 @@ import {
   CreditCard, 
   Building2, 
   Receipt, 
-  Settings, 
+  Settings,
+  Package,
+  ShoppingCart 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
@@ -70,6 +72,8 @@ const Sidebar = ({ collapsed = false }: SidebarProps) => {
         <NavItem to="/payments" icon={CreditCard} collapsed={collapsed}>Payments</NavItem>
         <NavItem to="/vendors" icon={Building2} collapsed={collapsed}>Vendors</NavItem>
         <NavItem to="/bills" icon={Receipt} collapsed={collapsed}>Bills</NavItem>
+        <NavItem to="/items" icon={Package} collapsed={collapsed}>Items</NavItem>
+        <NavItem to="/purchase-orders" icon={ShoppingCart} collapsed={collapsed}>Purchase Orders</NavItem>
         
         <div className="pt-4 mt-4 border-t">
           <NavItem to="/settings" icon={Settings} collapsed={collapsed} requiredRole="admin">Settings</NavItem>

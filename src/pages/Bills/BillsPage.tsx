@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,6 +38,11 @@ const BillsPage = () => {
 
   // Get unique vendors for filter
   const vendors = ['all', ...Array.from(new Set(bills.map(bill => bill.vendor)))];
+
+  // Log to verify page is loading
+  useEffect(() => {
+    console.log("Bills page loaded");
+  }, []);
 
   return (
     <>
@@ -118,7 +123,7 @@ const BillsPage = () => {
                     </TableCell>
                     <TableCell>{formatCurrency(bill.amount)}</TableCell>
                     <TableCell>
-                      <StatusBadge status={bill.status as any} />
+                      <StatusBadge status={bill.status as "paid" | "unpaid" | "partial" | "draft"} />
                     </TableCell>
                   </TableRow>
                 ))
