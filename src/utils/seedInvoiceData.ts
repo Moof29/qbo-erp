@@ -1,22 +1,22 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { v4 as uuidv4 } from 'uuid';
-import { toast } from "@/hooks/use-toast"; // Import toast directly instead of useToast
+import { useToast } from "@/hooks/use-toast";
 
 // Define return types for consistency
-interface SeedSuccessResult {
+export interface SeedSuccessResult {
   success: true;
   count: number;
   data?: any[];
   message?: string;
 }
 
-interface SeedErrorResult {
+export interface SeedErrorResult {
   success: false;
   error: string;
 }
 
-type SeedResult = SeedSuccessResult | SeedErrorResult;
+export type SeedResult = SeedSuccessResult | SeedErrorResult;
 
 const dummyInvoices = [
   {
@@ -76,6 +76,93 @@ const dummyInvoices = [
   },
 ];
 
+// Sample customers to create if none exist
+const sampleCustomers = [
+  {
+    display_name: 'Acme Inc.',
+    company_name: 'Acme Corporation',
+    email: 'billing@acme.com',
+    phone: '555-123-4567',
+    balance: 5000.00,
+    is_active: true
+  },
+  {
+    display_name: 'TechStart Solutions',
+    company_name: 'TechStart Solutions LLC',
+    email: 'accounts@techstart.com',
+    phone: '555-987-6543',
+    balance: 2500.00,
+    is_active: true
+  }
+];
+
+// Create customers if none exist
+const ensureCustomersExist = async (): Promise<string[]> => {
+  try {
+    // Check if customers exist
+    const { count, error: countError } = await supabase
+      .from('customer_profile')
+      .select('*', { count: 'exact', head: true });
+    
+    if (countError) throw countError;
+    
+    // If customers already exist, fetch their IDs
+    if (count && count > 0) {
+      const { data, error } = await supabase
+        .from('customer_profile')
+        .select('id')
+        .limit(5);
+      
+      if (error) throw error;
+      return data.map(c => c.id);
+    }
+    
+    // If no customers exist, create sample customers
+    console.log("No customers found. Creating sample customers...");
+    
+    // Get current user and organization
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    // For development purposes, we'll use fixed IDs if auth is not available
+    const userId = user?.id || uuidv4();
+    let organizationId = uuidv4(); // Default org ID for development
+    
+    if (user?.id) {
+      // If user is authenticated, get their real organization
+      const { data: userOrgs } = await supabase
+        .from('user_organizations')
+        .select('organization_id')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .limit(1);
+      
+      if (userOrgs && userOrgs.length > 0) {
+        organizationId = userOrgs[0].organization_id;
+      }
+    }
+    
+    const customersToInsert = sampleCustomers.map(customer => ({
+      ...customer,
+      organization_id: organizationId,
+      created_by: userId,
+      updated_by: userId
+    }));
+    
+    const { data, error } = await supabase
+      .from('customer_profile')
+      .insert(customersToInsert)
+      .select();
+    
+    if (error) throw error;
+    
+    console.log("Successfully created sample customers:", data);
+    return data.map(c => c.id);
+  } catch (error: any) {
+    console.error("Error ensuring customers exist:", error.message);
+    throw error;
+  }
+};
+
 export const seedDummyInvoices = async (): Promise<SeedResult> => {
   try {
     // Get current user and organization
@@ -99,39 +186,11 @@ export const seedDummyInvoices = async (): Promise<SeedResult> => {
       }
     }
     
-    // Try to get customers to associate with invoices
-    const { data: customers } = await supabase
-      .from('customer_profile')
-      .select('id, display_name')
-      .limit(5);
-    
-    // If no customers exist, create a dummy one
-    let customerIds = [];
-    if (!customers || customers.length === 0) {
-      const { data: newCustomer } = await supabase
-        .from('customer_profile')
-        .insert([
-          { 
-            display_name: 'Acme Inc.', 
-            company_name: 'Acme Corporation', 
-            organization_id: organizationId,
-            created_by: userId,
-            updated_by: userId,
-            balance: 5000.00,
-            is_active: true
-          }
-        ])
-        .select();
-        
-      if (newCustomer && newCustomer.length > 0) {
-        customerIds = [newCustomer[0].id];
-      }
-    } else {
-      customerIds = customers.map(c => c.id);
-    }
+    // Ensure we have customers before creating invoices
+    const customerIds = await ensureCustomersExist();
     
     if (customerIds.length === 0) {
-      throw new Error("No customers available to create invoices for");
+      return { success: false, error: "No customers available to create invoices for" };
     }
     
     // Add organization_id, created_by, and map customer_ids to invoices
@@ -168,7 +227,7 @@ export const checkInvoicesExist = async (): Promise<boolean> => {
     
     if (error) throw error;
     
-    return count && count > 0;
+    return count !== null && count > 0;
   } catch (error) {
     console.error("Error checking invoices:", error);
     return false;
@@ -179,23 +238,7 @@ export const seedIfEmptyInvoices = async (): Promise<SeedResult> => {
   try {
     const hasInvoices = await checkInvoicesExist();
     if (!hasInvoices) {
-      const result = await seedDummyInvoices();
-      if (result.success) {
-        toast({
-          title: "Dummy invoices created",
-          description: `${result.count} sample invoices have been added for testing`,
-        });
-        return result;
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Failed to create dummy invoices",
-          description: "success" in result && !result.success && "error" in result 
-            ? result.error 
-            : "Unknown error",
-        });
-        return result;
-      }
+      return await seedDummyInvoices();
     }
     return { 
       success: true, 

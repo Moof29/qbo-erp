@@ -19,8 +19,13 @@ const InvoicesPage = () => {
   // Check for dummy data on initial load
   useEffect(() => {
     const checkAndSeedData = async () => {
-      await seedIfEmptyInvoices();
-      refetch();
+      try {
+        await seedIfEmptyInvoices();
+      } catch (error) {
+        console.error("Error in initial seed:", error);
+      } finally {
+        refetch();
+      }
     };
     
     checkAndSeedData();
@@ -41,9 +46,7 @@ const InvoicesPage = () => {
         toast({
           variant: "destructive",
           title: "Failed to add sample data",
-          description: "success" in result && !result.success && "error" in result 
-            ? result.error 
-            : "Unknown error occurred",
+          description: result.success === false ? result.error : "Unknown error occurred",
         });
       }
       refetch(); // Always refetch to ensure UI is updated
