@@ -1,6 +1,4 @@
-
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from "@/hooks/use-toast"; // Import toast directly instead of useToast
 
@@ -165,7 +163,6 @@ export const seedIfEmptyInvoices = async () => {
   try {
     const hasInvoices = await checkInvoicesExist();
     if (!hasInvoices) {
-      // Use imported toast directly instead of requiring it
       const result = await seedDummyInvoices();
       if (result.success) {
         toast({
@@ -183,7 +180,7 @@ export const seedIfEmptyInvoices = async () => {
       }
     }
     return { success: true, count: 0, message: "Invoices already exist" };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error in seedIfEmptyInvoices:", error);
     return { success: false, error: String(error) };
   }

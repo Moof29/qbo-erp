@@ -45,7 +45,7 @@ const InvoicesPage = () => {
         toast({
           variant: "destructive",
           title: "Failed to add sample data",
-          description: result.error || "Unknown error occurred",
+          description: result.message || "Unknown error occurred", // Changed from result.error to result.message
         });
       }
       refetch(); // Always refetch to ensure UI is updated
