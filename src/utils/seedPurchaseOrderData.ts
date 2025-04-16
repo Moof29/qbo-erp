@@ -109,8 +109,8 @@ export const seedDummyPurchaseOrders = async () => {
       for (let i = 0; i < itemCount; i++) {
         const item = items[i % items.length];
         const quantity = Math.floor(Math.random() * 5) + 1;
-        const rate = item.purchase_cost || (Math.random() * 100 + 50).toFixed(2);
-        const amount = quantity * rate;
+        const rate = item.purchase_cost || (Math.random() * 100 + 50);
+        const amount = quantity * Number(rate);
         
         lineItems.push({
           purchase_order_id: po.id,

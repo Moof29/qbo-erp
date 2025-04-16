@@ -37,16 +37,6 @@ const PurchaseOrderDetailPage = () => {
     );
   }
 
-  const getStatusColor = (status?: string): "default" | "success" | "warning" | "danger" => {
-    switch (status) {
-      case 'draft': return 'default';
-      case 'pending': return 'warning';
-      case 'approved': return 'success';
-      case 'received': return 'success';
-      default: return 'default';
-    }
-  };
-
   return (
     <>
       <PageHeader 
@@ -65,7 +55,7 @@ const PurchaseOrderDetailPage = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Purchase Order Info</h3>
-              <StatusBadge status={getStatusColor(purchaseOrder.status)} label={purchaseOrder.status || 'draft'} />
+              <StatusBadge status={purchaseOrder.status || 'draft'} />
             </div>
             
             <div className="space-y-4">

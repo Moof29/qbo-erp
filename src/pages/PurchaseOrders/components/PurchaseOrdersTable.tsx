@@ -37,12 +37,12 @@ const PurchaseOrdersTable: React.FC<PurchaseOrdersTableProps> = ({ purchaseOrder
     );
   }
 
-  const getStatusColor = (status?: string): "default" | "success" | "warning" | "danger" => {
+  const getStatusType = (status?: string): 'draft' | 'pending' | 'approved' | 'received' | 'default' => {
     switch (status) {
-      case 'draft': return 'default';
-      case 'pending': return 'warning';
-      case 'approved': return 'success';
-      case 'received': return 'success';
+      case 'draft': return 'draft';
+      case 'pending': return 'pending';
+      case 'approved': return 'approved';
+      case 'received': return 'received';
       default: return 'default';
     }
   };
@@ -72,7 +72,7 @@ const PurchaseOrdersTable: React.FC<PurchaseOrdersTableProps> = ({ purchaseOrder
             <TableCell>{po.expected_date ? formatDate(new Date(po.expected_date)) : "—"}</TableCell>
             <TableCell>{po.total ? formatCurrency(po.total) : "—"}</TableCell>
             <TableCell>
-              <StatusBadge status={getStatusColor(po.status)} label={po.status || "draft"} />
+              <StatusBadge status={po.status || 'draft'} />
             </TableCell>
           </TableRow>
         ))}
