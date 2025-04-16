@@ -20,8 +20,14 @@ export interface Organization {
   industry: string | null;
   plan_type: string | null;
   timezone: string | null;
+  qbo_company_id?: string | null;
+  qbo_realm_id?: string | null;
+  qbo_access_token?: string | null;
+  qbo_refresh_token?: string | null;
+  qbo_token_expires_at?: string | null;
   is_active: boolean;
   created_at: string;
+  updated_at?: string;
 }
 
 export interface UserOrganization {
@@ -29,7 +35,24 @@ export interface UserOrganization {
   user_id: string;
   organization_id: string;
   role: string;
+  invited_at?: string | null;
+  accepted_at?: string | null;
+  invited_by?: string | null;
   is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// This represents an organization with the user's role in it
+export interface OrganizationWithUserRole {
+  id: string;
+  name: string;
+  industry: string | null;
+  plan_type: string | null;
+  timezone: string | null;
+  is_active: boolean;
+  created_at: string;
+  userRole: string;
 }
 
 // Helper functions for organizations
@@ -46,7 +69,8 @@ export const fetchUserOrganizations = async (userId: string) => {
         industry,
         plan_type,
         timezone,
-        is_active
+        is_active,
+        created_at
       )
     `)
     .eq('user_id', userId)

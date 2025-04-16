@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase, fetchUserOrganizations, Organization, UserOrganization } from '@/integrations/supabase/client';
+import { supabase, fetchUserOrganizations, createOrganization, linkUserToOrganization, Organization, OrganizationWithUserRole } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -10,8 +10,8 @@ type UserWithRole = User & {
   roles?: Role[];
 };
 
-export interface OrganizationWithDetails extends Organization {
-  userRole?: string;
+export interface OrganizationWithDetails extends OrganizationWithUserRole {
+  userRole: string;
 }
 
 type AuthContextType = {
@@ -106,7 +106,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (userOrgs) {
         const orgsWithDetails: OrganizationWithDetails[] = userOrgs.map(item => ({
-          ...(item.organizations as Organization),
+          ...item.organizations,
           userRole: item.role
         }));
         
@@ -273,45 +273,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     
     try {
       // 1. Create the organization
-      const { data: orgData, error: orgError } = await supabase
-        .from('organizations')
-        .insert({ 
-          name, 
-          industry: industry || null,
-        })
-        .select()
-        .single();
-        
-      if (orgError) throw orgError;
+      const orgData: Partial<Organization> = { 
+        name, 
+        industry: industry || null,
+      };
       
-      // 2. Link the user to the organization as admin
-      const { error: linkError } = await supabase
-        .from('user_organizations')
-        .insert({
-          user_id: user.id,
-          organization_id: orgData.id,
-          role: 'admin',
-          accepted_at: new Date().toISOString()
-        });
+      const newOrg = await createOrganization(orgData);
         
-      if (linkError) throw linkError;
+      // 2. Link the user to the organization as admin
+      await linkUserToOrganization(user.id, newOrg.id, 'admin');
       
       // 3. Refresh organizations list
       await refreshOrganizations();
       
       // 4. Set the new organization as current
-      const newOrg: OrganizationWithDetails = {
-        ...orgData,
-        userRole: 'admin'
-      };
-      setCurrentOrganization(newOrg);
+      if (newOrg) {
+        const newOrgWithDetails: OrganizationWithDetails = {
+          ...newOrg,
+          userRole: 'admin'
+        };
+        setCurrentOrganization(newOrgWithDetails);
+      }
       
       toast({
         title: "Organization created",
         description: `${name} has been created successfully`,
       });
       
-      return orgData;
+      return newOrg;
     } catch (error: any) {
       console.error('Error creating organization:', error);
       toast({
