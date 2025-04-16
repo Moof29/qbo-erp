@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { 
   supabase, 
@@ -111,7 +110,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const userOrgs = await fetchUserOrganizations(user.id);
       
-      if (userOrgs) {
+      if (userOrgs && Array.isArray(userOrgs)) {
         const orgsWithDetails: OrganizationWithDetails[] = userOrgs.map(item => ({
           id: item.organizations.id,
           name: item.organizations.name,
@@ -125,9 +124,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         setOrganizations(orgsWithDetails);
         
-        // If we have organizations but no current one selected, select the first one
         if (orgsWithDetails.length > 0 && !currentOrganization) {
-          // First try to get the last used org from localStorage
           const lastOrgId = localStorage.getItem('currentOrganizationId');
           const lastUsedOrg = lastOrgId ? 
             orgsWithDetails.find(org => org.id === lastOrgId) : 
@@ -285,7 +282,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!user) return null;
     
     try {
-      // 1. Create the organization
       const orgData: Partial<Organization> = { 
         name, 
         industry: industry || null,
@@ -293,13 +289,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       const newOrg = await createOrganization(orgData);
         
-      // 2. Link the user to the organization as admin
       await linkUserToOrganization(user.id, newOrg.id, 'admin');
       
-      // 3. Refresh organizations list
       await refreshOrganizations();
       
-      // 4. Set the new organization as current
       if (newOrg) {
         const newOrgWithDetails: OrganizationWithDetails = {
           id: newOrg.id,
